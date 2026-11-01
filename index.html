@@ -18,6 +18,249 @@
   <script type="text/babel">
     const { useState, useEffect } = React;
 
+    // Shuffles an array randomly (Fisher-Yates) so the weekly issues come in a
+    // different order each playthrough instead of always the same sequence.
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    // 25 distinct weekly issues covering treasury, security, health, education,
+    // devolution, environment, foreign affairs, corruption and more. The game
+    // works through every one of these before any of them can repeat, which is
+    // what fixes the old "same 3 emails forever" problem.
+    const ISSUE_BANK = [
+      {
+        sender: 'CS Treasury & Planning',
+        subject: 'IMF Loan Tranche & Conditionality Briefing',
+        body: 'The IMF board requires an excise tax hike on digital payments before releasing the KSh 35 Billion budget support loan.',
+        options: [
+          { text: 'Accept IMF Tax Mandate (+35B KSh Treasury, -12% Hustlers Approval, +6% Uprising)', treasury: 35, hustlers: -12, risk: 6 },
+          { text: 'Reject IMF Directive (-10B KSh Treasury, +10% Hustlers Approval, -5% Uprising)', treasury: -10, hustlers: 10, risk: -5 }
+        ]
+      },
+      {
+        sender: 'National Assembly Chief Whip',
+        subject: 'Constituency Development Fund Motion',
+        body: 'Backbench MPs threaten to boycott legislative business unless CDF funds are disbursed into county accounts this quarter.',
+        options: [
+          { text: 'Disburse CDF Funds (-18B KSh Treasury, +12 Whip Score, -5% Impeachment Risk)', treasury: -18, whip: 12, impeachment: -5 },
+          { text: 'Refuse Discretionary Pay (+5% Authority, -10 Whip Score, +8% Impeachment Risk)', authority: 5, whip: -10, impeachment: 8 }
+        ]
+      },
+      {
+        sender: 'Inspector General of Police',
+        subject: 'Security Alert: Regional Transport Strike',
+        body: 'Matatu operators announce a nationwide shutdown over toll station rates on major highways.',
+        options: [
+          { text: 'Subsidize Toll Charges (-6B KSh Treasury, -8% Uprising Risk, +6% Approval)', treasury: -6, risk: -8, publicApproval: 6 },
+          { text: 'Deploy Security Forces (+12% Uprising Risk, -8% Civil Society Approval)', risk: 12, civilSociety: -8 }
+        ]
+      },
+      {
+        sender: 'Principal Secretary, Ministry of Health',
+        subject: 'Nurses Union Collective Bargaining Dispute',
+        body: 'The Kenya National Union of Nurses threatens a hospital walkout unless CBA arrears are paid in full.',
+        options: [
+          { text: 'Clear CBA Arrears (-14B KSh Treasury, +10% Civil Society, -6% Uprising)', treasury: -14, civilSociety: 10, risk: -6 },
+          { text: 'Offer Phased Payment Plan (-4B KSh Treasury, -5% Civil Society, +4% Uprising)', treasury: -4, civilSociety: -5, risk: 4 }
+        ]
+      },
+      {
+        sender: 'Principal Secretary, Ministry of Education',
+        subject: 'Free Day Secondary Capitation Delay',
+        body: 'Public secondary schools report capitation shortfalls, risking disruption to Term 2 learning and exam registration.',
+        options: [
+          { text: 'Release Emergency Capitation (-9B KSh Treasury, +8% Rural Approval, +5% Civil Society)', treasury: -9, ruralFarmers: 8, civilSociety: 5 },
+          { text: 'Delay Pending Audit (+3B KSh Treasury Saved, -10% Rural Approval, +6% Uprising)', treasury: 3, ruralFarmers: -10, risk: 6 }
+        ]
+      },
+      {
+        sender: 'KDF Chief of Defence Forces',
+        subject: 'Cross-Border Incursion Alert',
+        body: 'Intelligence confirms a cross-border incursion near the Somali frontier; Command requests authorization for a rapid-response operation.',
+        options: [
+          { text: 'Authorize Rapid Response (-7B KSh Treasury, +8% Military Readiness, +5% Uprising)', treasury: -7, readiness: 8, risk: 5 },
+          { text: 'Reinforce Border Patrols Only (-2B KSh Treasury, +3% Military Readiness)', treasury: -2, readiness: 3 }
+        ]
+      },
+      {
+        sender: 'Commissioner General, Kenya Revenue Authority',
+        subject: 'Informal Sector Tax Compliance Drive',
+        body: 'KRA proposes a crackdown on unregistered traders in open-air markets to widen the tax base.',
+        options: [
+          { text: 'Launch Compliance Crackdown (+18B KSh Treasury, -10% Hustlers Approval, +7% Uprising)', treasury: 18, hustlers: -10, risk: 7 },
+          { text: 'Offer Voluntary Tax Amnesty (+6B KSh Treasury, +8% Hustlers Approval, -3% Uprising)', treasury: 6, hustlers: 8, risk: -3 }
+        ]
+      },
+      {
+        sender: 'Cabinet Secretary, Energy & Petroleum',
+        subject: 'Fuel Pricing Formula Review',
+        body: 'Global crude prices are rising; the Energy Regulator recommends adjusting the monthly pump price formula.',
+        options: [
+          { text: 'Maintain Fuel Subsidy (-20B KSh Treasury, +10% Hustlers Approval, -6% Uprising)', treasury: -20, hustlers: 10, risk: -6 },
+          { text: 'Pass Full Cost to Pump Price (+15B KSh Treasury, -14% Hustlers Approval, +10% Uprising)', treasury: 15, hustlers: -14, risk: 10 }
+        ]
+      },
+      {
+        sender: 'Chair, National Land Commission',
+        subject: 'Informal Settlement Eviction Dispute',
+        body: 'A court-ordered eviction in an informal settlement has sparked protests; rights groups demand a halt pending resettlement plans.',
+        options: [
+          { text: 'Suspend Eviction, Fund Resettlement (-8B KSh Treasury, +10% Civil Society, -6% Uprising)', treasury: -8, civilSociety: 10, risk: -6 },
+          { text: 'Proceed With Court Order (+4% Business Elites Confidence, -12% Civil Society, +9% Uprising)', businessElites: 4, civilSociety: -12, risk: 9 }
+        ]
+      },
+      {
+        sender: 'Cabinet Secretary, Agriculture & Livestock',
+        subject: 'Subsidized Fertilizer Distribution Delay',
+        body: 'Farmers in the Rift Valley report fertilizer shortages ahead of the planting season, threatening maize output.',
+        options: [
+          { text: 'Fast-Track Emergency Supply (-10B KSh Treasury, +12% Rural Approval)', treasury: -10, ruralFarmers: 12 },
+          { text: 'Refer to County Governments (+2B KSh Treasury Saved, -10% Rural Approval, +5% Uprising)', treasury: 2, ruralFarmers: -10, risk: 5 }
+        ]
+      },
+      {
+        sender: 'Chair, Council of Governors',
+        subject: 'Delayed Equitable Share Disbursement',
+        body: 'Governors warn that county health workers will go unpaid unless the national equitable share is released on schedule.',
+        options: [
+          { text: 'Release Full Equitable Share (-22B KSh Treasury, +9% Civil Society, -5% Impeachment Risk)', treasury: -22, civilSociety: 9, impeachment: -5 },
+          { text: 'Release Partial Tranche (-10B KSh Treasury, +3% Civil Society, +4% Impeachment Risk)', treasury: -10, civilSociety: 3, impeachment: 4 }
+        ]
+      },
+      {
+        sender: 'Office of the Chief Justice',
+        subject: 'Judiciary Budget Independence Dispute',
+        body: 'The Judiciary accuses the Executive of underfunding courts to slow down pending constitutional petitions.',
+        options: [
+          { text: 'Restore Full Judiciary Budget (-9B KSh Treasury, +6% Civil Society, -4% Impeachment Risk)', treasury: -9, civilSociety: 6, impeachment: -4 },
+          { text: 'Hold Budget Pending Review (+5% Authority, -10% Civil Society, +8% Impeachment Risk)', authority: 5, civilSociety: -10, impeachment: 8 }
+        ]
+      },
+      {
+        sender: 'Cabinet Secretary, ICT & Digital Economy',
+        subject: 'National Digital ID Rollout Controversy',
+        body: 'Privacy advocates challenge the mandatory digital ID rollout in court, citing data protection concerns.',
+        options: [
+          { text: 'Proceed With Mandatory Rollout (+10B KSh Treasury Savings, -9% Civil Society, +5% Uprising)', treasury: 10, civilSociety: -9, risk: 5 },
+          { text: 'Make Registration Voluntary (-4B KSh Treasury, +7% Civil Society, -3% Uprising)', treasury: -4, civilSociety: 7, risk: -3 }
+        ]
+      },
+      {
+        sender: 'Director General, NEMA',
+        subject: 'Forest Logging Ban Enforcement Dispute',
+        body: 'Charcoal traders in forest-adjacent communities protest the logging ban, citing loss of livelihoods.',
+        options: [
+          { text: 'Enforce Logging Ban Strictly (+5% Civil Society, -10% Rural Approval, +6% Uprising)', civilSociety: 5, ruralFarmers: -10, risk: 6 },
+          { text: 'Permit Regulated Community Logging (-3B KSh Treasury, +8% Rural Approval, -4% Civil Society)', treasury: -3, ruralFarmers: 8, civilSociety: -4 }
+        ]
+      },
+      {
+        sender: 'CEO, Kenya Medical Supplies Authority',
+        subject: 'Essential Drug Stockout Crisis',
+        body: 'Public hospitals report critical shortages of essential medicines; KEMSA requests emergency procurement funds.',
+        options: [
+          { text: 'Approve Emergency Procurement (-11B KSh Treasury, +9% Civil Society, -5% Uprising)', treasury: -11, civilSociety: 9, risk: -5 },
+          { text: 'Order Internal Audit First (+2B KSh Treasury Saved, -8% Civil Society, +6% Uprising)', treasury: 2, civilSociety: -8, risk: 6 }
+        ]
+      },
+      {
+        sender: 'Principal Secretary, Diaspora Affairs',
+        subject: 'Proposed Remittance Transaction Levy',
+        body: 'The Treasury proposes a small levy on diaspora remittances; diaspora groups warn it could discourage formal transfers.',
+        options: [
+          { text: 'Impose Remittance Levy (+8B KSh Treasury, -6% Civil Society)', treasury: 8, civilSociety: -6 },
+          { text: 'Withdraw the Proposal (+5% Civil Society, -2B KSh Treasury Opportunity Cost)', civilSociety: 5, treasury: -2 }
+        ]
+      },
+      {
+        sender: 'National Disaster Operations Centre',
+        subject: 'Flooding Along the Tana River Basin',
+        body: 'Seasonal flooding has displaced thousands of families along the Tana River; relief agencies request emergency funding.',
+        options: [
+          { text: 'Deploy Emergency Relief (-13B KSh Treasury, +11% Rural Approval, -6% Uprising)', treasury: -13, ruralFarmers: 11, risk: -6 },
+          { text: 'Rely on Donor Agencies (+3B KSh Treasury Saved, -9% Rural Approval, +7% Uprising)', treasury: 3, ruralFarmers: -9, risk: 7 }
+        ]
+      },
+      {
+        sender: 'National Drought Management Authority',
+        subject: 'Famine Early Warning: Northern Kenya',
+        body: 'Prolonged drought in Turkana and Marsabit counties has triggered a famine early-warning alert.',
+        options: [
+          { text: 'Declare National Disaster & Fund Relief (-16B KSh Treasury, +13% Rural Approval, -7% Uprising)', treasury: -16, ruralFarmers: 13, risk: -7 },
+          { text: 'Request International Aid Instead (-2B KSh Treasury, +4% Rural Approval, +3% Uprising)', treasury: -2, ruralFarmers: 4, risk: 3 }
+        ]
+      },
+      {
+        sender: 'Governor, Central Bank of Kenya',
+        subject: 'Shilling Depreciation & Interest Rate Decision',
+        body: 'The Kenya Shilling continues to weaken against major currencies; the Monetary Policy Committee recommends a rate hike.',
+        options: [
+          { text: 'Approve Interest Rate Hike (+6% Business Elites Confidence, -8% Hustlers Approval)', businessElites: 6, hustlers: -8 },
+          { text: 'Hold Rates Steady (+6% Hustlers Approval, -5% Business Elites Confidence)', hustlers: 6, businessElites: -5 }
+        ]
+      },
+      {
+        sender: 'Chair, Ethics and Anti-Corruption Commission',
+        subject: 'Procurement Scandal Implicates Senior Official',
+        body: 'Investigators have linked a senior government official to an irregular tender; the public demands accountability.',
+        options: [
+          { text: 'Suspend Official & Order Probe (+10% Civil Society, -8% Authority, -6% Impeachment Risk)', civilSociety: 10, authority: -8, impeachment: -6 },
+          { text: 'Await Internal Review (-12% Civil Society, +10% Uprising, +8% Impeachment Risk)', civilSociety: -12, risk: 10, impeachment: 8 }
+        ]
+      },
+      {
+        sender: 'Secretary General, KNUT',
+        subject: 'Teacher Promotion & Pay Grievance',
+        body: 'The teachers union threatens a nationwide strike over delayed promotions under the latest Collective Bargaining Agreement.',
+        options: [
+          { text: 'Implement Promotions Now (-15B KSh Treasury, +10% Civil Society, -5% Uprising)', treasury: -15, civilSociety: 10, risk: -5 },
+          { text: 'Stagger Promotions Over 2 Years (-5B KSh Treasury, -6% Civil Society, +4% Uprising)', treasury: -5, civilSociety: -6, risk: 4 }
+        ]
+      },
+      {
+        sender: 'Public Service Commission',
+        subject: 'Civil Service Wage Bill Austerity Review',
+        body: 'The wage bill now consumes a growing share of revenue; the Commission proposes a hiring freeze and allowance cuts.',
+        options: [
+          { text: 'Approve Austerity Measures (+14B KSh Treasury, -9% Civil Society, +6% Uprising)', treasury: 14, civilSociety: -9, risk: 6 },
+          { text: 'Protect Current Staffing Levels (-6B KSh Treasury, +7% Civil Society, -3% Uprising)', treasury: -6, civilSociety: 7, risk: -3 }
+        ]
+      },
+      {
+        sender: 'Cabinet Secretary, Mining & Minerals',
+        subject: 'Mineral Royalty Dispute With Investors',
+        body: 'Foreign mining firms threaten to halt operations over a proposed increase in royalty rates.',
+        options: [
+          { text: 'Raise Royalty Rates (+12B KSh Treasury, -6% Business Elites Confidence)', treasury: 12, businessElites: -6 },
+          { text: 'Maintain Current Rates (+5% Business Elites Confidence, -3B KSh Treasury Opportunity Cost)', businessElites: 5, treasury: -3 }
+        ]
+      },
+      {
+        sender: 'CEO, Kenya Tourism Board',
+        subject: 'Travel Advisory Impact on Tourism Revenue',
+        body: 'A foreign government travel advisory has dented tourist arrivals; the Board requests emergency marketing funds.',
+        options: [
+          { text: 'Fund Global Marketing Campaign (-7B KSh Treasury, +5% Business Elites Confidence)', treasury: -7, businessElites: 5 },
+          { text: 'Decline Funding This Quarter (+2B KSh Treasury Saved, -4% Business Elites Confidence)', treasury: 2, businessElites: -4 }
+        ]
+      },
+      {
+        sender: 'Interfaith Council of Kenya',
+        subject: 'Call for Dialogue Amid Rising Ethnic Tension',
+        body: 'Religious leaders report rising tension between communities in the Rift Valley and call for a national dialogue forum.',
+        options: [
+          { text: 'Convene National Dialogue Forum (-3B KSh Treasury, +9% Civil Society, -7% Uprising)', treasury: -3, civilSociety: 9, risk: -7 },
+          { text: 'Leave to Local Leaders (+1B KSh Treasury Saved, -6% Civil Society, +5% Uprising)', treasury: 1, civilSociety: -6, risk: 5 }
+        ]
+      }
+    ];
+
     function App() {
       const [inaugurated, setInaugurated] = useState(false);
       const [week, setWeek] = useState(1);
@@ -170,6 +413,10 @@
         { id: 'US', name: 'United States', region: 'Global Superpower', relation: 80, status: 'Strategic Security Partner', tradeDeal: 'STIP Trade Negotiations' }
       ]);
 
+      // Tracks which issues from ISSUE_BANK are still left this round, so all 25
+      // appear once before any of them can be picked again.
+      const [dispatchQueue, setDispatchQueue] = useState([]);
+
       // ADVANCE WEEK ENGINE: Generates dynamic emails, bills, and risk updates for all 240 weeks
       const advanceWeek = () => {
         const nextWeek = week + 1;
@@ -187,41 +434,24 @@
         if (inflation > 7.0) newUprising += 2;
         setUprisingRisk(Math.min(100, Math.max(0, newUprising)));
 
-        // PROCEDURAL DISPATCH GENERATOR (3 New Scenario Emails per Week)
-        const dispatchPool = [
-          {
-            sender: 'CS Treasury & Planning',
-            subject: `IMF Loan Tranche & Conditionality Briefing (Week ${nextWeek})`,
-            body: `The IMF board requires an excise tax hike on digital payments before releasing the KSh 35 Billion budget support loan.`,
-            options: [
-              { text: 'Accept IMF Tax Mandate (+35B KSh Treasury, -12% Hustlers Approval, +6% Uprising)', treasury: 35, hustlers: -12, risk: 6 },
-              { text: 'Reject IMF Directive (-35B KSh Loan, +10% Hustlers Approval, -5% Uprising)', treasury: -10, hustlers: 10, risk: -5 }
-            ]
-          },
-          {
-            sender: 'National Assembly Chief Whip',
-            subject: `Constituency Development Fund Motion (Week ${nextWeek})`,
-            body: `Backbench MPs threaten to boycott legislative business unless CDF funds are disbursed into county accounts.`,
-            options: [
-              { text: 'Disburse CDF Funds (-18B KSh Treasury, +12 Whip Score, -5% Impeachment Risk)', treasury: -18, whip: 12, impeachment: -5 },
-              { text: 'Refuse Discretionary Pay (-10 Whip Score, +5 Authority, +8% Impeachment Risk)', authority: 5, whip: -10, impeachment: 8 }
-            ]
-          },
-          {
-            sender: 'Inspector General of Police',
-            subject: `Security Alert: Regional Transport Strike (Week ${nextWeek})`,
-            body: `Matatu operators announce a nationwide shutdown over toll station rates on major highways.`,
-            options: [
-              { text: 'Subsidize Toll Charges (-6B KSh Treasury, -8% Uprising Risk, +6% Approval)', treasury: -6, risk: -8, publicApproval: 6 },
-              { text: 'Deploy Security Forces (+12% Uprising Risk, -8% Civil Society Approval)', risk: 12, civilSociety: -8 }
-            ]
-          }
-        ];
+        // PROCEDURAL DISPATCH GENERATOR
+        // Pick the next issue from the shuffled queue. When the queue runs out,
+        // reshuffle all 25 issues again so every one appears before any repeat.
+        let queue = dispatchQueue;
+        if (queue.length === 0) {
+          queue = shuffleArray(ISSUE_BANK.map((_, idx) => idx));
+        }
+        const issueIndex = queue[0];
+        setDispatchQueue(queue.slice(1));
+        const issue = ISSUE_BANK[issueIndex];
 
-        // Add dispatches to Inbox
+        // Add dispatch to Inbox
         const newMail = {
           id: Date.now(),
-          ...dispatchPool[nextWeek % dispatchPool.length],
+          sender: issue.sender,
+          subject: issue.subject,
+          body: issue.body,
+          options: issue.options,
           category: 'unread',
           status: 'pending',
           date: `Week ${nextWeek}`
@@ -252,10 +482,12 @@
         if (option.hustlers) setDemographics(d => ({ ...d, hustlers: Math.min(100, Math.max(0, d.hustlers + option.hustlers)) }));
         if (option.civilSociety) setDemographics(d => ({ ...d, civilSociety: Math.min(100, Math.max(0, d.civilSociety + option.civilSociety)) }));
         if (option.ruralFarmers) setDemographics(d => ({ ...d, ruralFarmers: Math.min(100, Math.max(0, d.ruralFarmers + option.ruralFarmers)) }));
+        if (option.businessElites) setDemographics(d => ({ ...d, businessElites: Math.min(100, Math.max(0, d.businessElites + option.businessElites)) }));
         if (option.risk) setUprisingRisk(r => Math.min(100, Math.max(0, r + option.risk)));
         if (option.impeachment) setImpeachmentRisk(i => Math.min(100, Math.max(0, i + option.impeachment)));
         if (option.whip) setWhipScore(w => Math.min(100, Math.max(0, w + option.whip)));
         if (option.publicApproval) setPublicApproval(p => Math.min(100, Math.max(0, p + option.publicApproval)));
+        if (option.readiness) setMilitary(m => ({ ...m, readiness: Math.min(100, Math.max(0, m.readiness + option.readiness)) }));
 
         setEmails(emails.map(e => e.id === mail.id ? { ...e, category: 'read', status: 'resolved' } : e));
         setSelectedMail(null);
