@@ -11,8 +11,6 @@
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <!-- Babel Standalone for JSX -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 font-sans selection:bg-amber-500 selection:text-slate-950">
   <div id="root"></div>
@@ -26,11 +24,10 @@
       const [activeTab, setActiveTab] = useState('home');
       const [selectedInboxTab, setSelectedInboxTab] = useState('unread');
       const [selectedMail, setSelectedMail] = useState(null);
-      const [selectedBill, setSelectedBill] = useState(null);
 
       // State Metrics
       const [authority, setAuthority] = useState(85);
-      const [treasury, setTreasury] = useState(420);
+      const [treasury, setTreasury] = useState(420); // KSh Billions
       const [debtRatio, setDebtRatio] = useState(68);
       const [whipScore, setWhipScore] = useState(72);
       const [inflation, setInflation] = useState(6.4);
@@ -55,40 +52,49 @@
         ]
       });
 
+      // 30 Candidate Pool Across Dockets
       const candidatePool = {
         treasury: [
           { name: 'Dr. John K. Njuguna', competence: 92, loyalty: 65, region: 'Central' },
           { name: 'Hon. Wycliffe O. Musalia', competence: 78, loyalty: 90, region: 'Western' },
-          { name: 'Prof. Nzioka Waita', competence: 88, loyalty: 70, region: 'Eastern' }
+          { name: 'Prof. Nzioka Waita', competence: 88, loyalty: 70, region: 'Eastern' },
+          { name: 'Dr. Kamau Thugge', competence: 84, loyalty: 80, region: 'Central' }
         ],
         interior: [
           { name: 'Gen. Raymond O. Kibwana', competence: 94, loyalty: 85, region: 'Rift Valley' },
           { name: 'Hon. Kithure A. Kindiki', competence: 85, loyalty: 95, region: 'Eastern' },
-          { name: 'Aisha J. Mohamed', competence: 80, loyalty: 75, region: 'Coast' }
+          { name: 'Aisha J. Mohamed', competence: 80, loyalty: 75, region: 'Coast' },
+          { name: 'George Natembeya', competence: 90, loyalty: 60, region: 'Western' }
         ],
         foreign: [
           { name: 'Amb. Macharia Kamau', competence: 90, loyalty: 70, region: 'Central' },
-          { name: 'Dr. Korir A. Sing’oei', competence: 86, loyalty: 92, region: 'Rift Valley' }
+          { name: 'Dr. Korir A. Sing’oei', competence: 86, loyalty: 92, region: 'Rift Valley' },
+          { name: 'Raychelle Omamo', competence: 82, loyalty: 78, region: 'Nyanza' }
         ],
         health: [
           { name: 'Dr. Nakhumicha S. Wafula', competence: 72, loyalty: 88, region: 'Western' },
-          { name: 'Dr. Mercy Mwangangi', competence: 89, loyalty: 75, region: 'Eastern' }
+          { name: 'Dr. Mercy Mwangangi', competence: 89, loyalty: 75, region: 'Eastern' },
+          { name: 'Dr. Cleopa Mailu', competence: 85, loyalty: 82, region: 'Eastern' }
         ],
         defense: [
           { name: 'Hon. Aden B. Duale', competence: 85, loyalty: 94, region: 'North Eastern' },
-          { name: 'Gen. Samson J. Mwathethe', competence: 95, loyalty: 80, region: 'Coast' }
+          { name: 'Gen. Samson J. Mwathethe', competence: 95, loyalty: 80, region: 'Coast' },
+          { name: 'Eugene Wamalwa', competence: 76, loyalty: 85, region: 'Western' }
         ],
         education: [
           { name: 'Prof. Ezekiel O. Machogu', competence: 75, loyalty: 90, region: 'Nyanza' },
-          { name: 'Dr. Beatrice Inyangala', competence: 88, loyalty: 82, region: 'Western' }
+          { name: 'Dr. Beatrice Inyangala', competence: 88, loyalty: 82, region: 'Western' },
+          { name: 'Prof. George Magoha Jr.', competence: 91, loyalty: 70, region: 'Nyanza' }
         ],
         agri: [
           { name: 'Hon. Linturi F. Mithika', competence: 70, loyalty: 85, region: 'Eastern' },
-          { name: 'Dr. Andrew Tuimur', competence: 86, loyalty: 88, region: 'Rift Valley' }
+          { name: 'Dr. Andrew Tuimur', competence: 86, loyalty: 88, region: 'Rift Valley' },
+          { name: 'Willy Bett', competence: 82, loyalty: 84, region: 'Rift Valley' }
         ],
         ag: [
           { name: 'Justin B. Muturi', competence: 88, loyalty: 90, region: 'Central' },
-          { name: 'Dorcas A. Oduor', competence: 92, loyalty: 85, region: 'Nyanza' }
+          { name: 'Dorcas A. Oduor', competence: 92, loyalty: 85, region: 'Nyanza' },
+          { name: 'Githu Muigai', competence: 95, loyalty: 65, region: 'Central' }
         ]
       };
 
@@ -97,6 +103,7 @@
         defense: null, education: null, agri: null, ag: null
       });
 
+      // Interactive Dynamic Inbox Engine
       const [emails, setEmails] = useState([
         {
           id: 1,
@@ -105,41 +112,57 @@
           category: 'unread',
           status: 'pending',
           date: 'Week 1',
-          body: 'Your Excellency, the Cabinet swearing-in protocol is complete. Intelligence reports indicate brewing public agitation over high fuel prices and unfulfilled subsidy promises. The National Treasury recommends immediate tax restructuring.',
+          body: 'Your Excellency, Cabinet formation is complete. Intelligence reports public agitation over rising food and fuel prices. Treasury urges immediate tax rationalization.',
           options: [
-            { text: 'Authorize Emergency Fuel Cushioning Levy (-15B KSh, +8% Hustlers Approval)', authority: -3, treasury: -15, hustlers: 8, risk: -5 },
-            { text: 'Maintain Strict Budgetary Austerity (+25B KSh Treasury, -10% Hustlers Approval)', authority: 2, treasury: 25, hustlers: -10, risk: 8 }
+            { text: 'Authorize Fuel Subsidy Cushion (-15B KSh Treasury, +8% Hustlers Approval, -5% Uprising)', authority: -3, treasury: -15, hustlers: 8, risk: -5 },
+            { text: 'Enforce Fiscal Austerity (+25B KSh Treasury, -10% Hustlers Approval, +8% Uprising)', authority: 2, treasury: 25, hustlers: -10, risk: 8 }
+          ]
+        },
+        {
+          id: 2,
+          sender: 'KDF Chief of Defence Forces',
+          subject: 'Northern Frontier Patrol Briefing',
+          category: 'unread',
+          status: 'pending',
+          date: 'Week 1',
+          body: 'Militia activity detected along the border corridors. Command requests additional operational deployment.',
+          options: [
+            { text: 'Deploy Special Battalion (-5B KSh Treasury, +5 Security Readiness)', treasury: -5, readiness: 5 },
+            { text: 'Seek Local Peace Baraza (-1B KSh Treasury, +4% Rural Approval)', treasury: -1, ruralFarmers: 4 }
           ]
         }
       ]);
 
+      // Grassroots Petitions Channel
       const [petitions, setPetitions] = useState([
         {
           id: 101,
           organization: 'Kenya Medical Practitioners Union (KMPDU)',
-          title: 'Demands for CBA Implementation & Intern Posting',
+          title: 'CBA Implementation & Intern Posting Notice',
           urgency: 'HIGH',
-          description: 'Public health workers threaten a nation-wide strike within 7 days unless funds are released for medical interns.',
+          description: 'Doctors threaten nationwide strike unless funds are released immediately for medical intern placement.',
           options: [
-            { text: 'Accede to Union Demands (-12B KSh Treasury, -10% Uprising Risk)', treasury: -12, risk: -10 },
-            { text: 'Declare Strike Illegal & Enforce Mandatory Work Order (+15% Uprising Risk)', treasury: 0, risk: 15 }
+            { text: 'Grant Union Demands (-12B KSh Treasury, -10% Uprising Risk, +12% Civil Society)', treasury: -12, risk: -10, civilSociety: 12 },
+            { text: 'Declare Strike Illegal (-8% Civil Society, +15% Uprising Risk)', treasury: 0, risk: 15, civilSociety: -8 }
           ]
         }
       ]);
 
+      // Legislative Bills Engine
       const [bills, setBills] = useState([
         {
           id: 201,
           ministry: 'National Treasury',
           title: 'Finance Bill 2026 (Tax Rationalization)',
           stage: 'Presidential Assent Desk',
-          description: 'Introduces a 2.5% Motor Vehicle Circulation Tax and adjusts VAT exemptions.',
+          description: 'Introduces Motor Vehicle Tax and adjusts VAT exemptions to satisfy debt restructuring goals.',
           fiscalImpact: '+65B KSh Annual Revenue',
-          publicImpact: '-14% Overall Public Approval',
+          publicImpact: '-14% Overall Approval',
           status: 'pending'
         }
       ]);
 
+      // Foreign Diplomacy Matrix
       const [countries, setCountries] = useState([
         { id: 'UG', name: 'Uganda', region: 'EAC Ally', relation: 85, status: 'Ally', tradeDeal: 'Active EAC Transit Tariff Waiver' },
         { id: 'TZ', name: 'Tanzania', region: 'EAC Partner', relation: 65, status: 'Neutral', tradeDeal: 'Non-Tariff Barrier Disputes' },
@@ -147,53 +170,123 @@
         { id: 'US', name: 'United States', region: 'Global Superpower', relation: 80, status: 'Strategic Security Partner', tradeDeal: 'STIP Trade Negotiations' }
       ]);
 
+      // ADVANCE WEEK ENGINE: Generates dynamic emails, bills, and risk updates for all 240 weeks
       const advanceWeek = () => {
-        const newWeek = week + 1;
-        setWeek(newWeek);
-        
-        // Random procedural scenario
-        setEmails(prev => [
+        const nextWeek = week + 1;
+        setWeek(nextWeek);
+
+        // Update Macro Metrics
+        const updatedDebt = Math.min(95, debtRatio + 0.1);
+        const updatedInflation = Math.max(3.5, inflation + (uprisingRisk > 40 ? 0.2 : -0.1));
+        setDebtRatio(parseFloat(updatedDebt.toFixed(1)));
+        setInflation(parseFloat(updatedInflation.toFixed(1)));
+
+        // Risk Triggers
+        let newUprising = uprisingRisk;
+        if (publicApproval < 40) newUprising += 3;
+        if (inflation > 7.0) newUprising += 2;
+        setUprisingRisk(Math.min(100, Math.max(0, newUprising)));
+
+        // PROCEDURAL DISPATCH GENERATOR (3 New Scenario Emails per Week)
+        const dispatchPool = [
           {
-            id: Date.now(),
-            sender: 'National Assembly Chief Whip',
-            subject: `Backbench Policy Briefing (Week ${newWeek})`,
-            body: `Your Excellency, backbenchers are demanding consultations regarding upcoming development fund disbursements for Week ${newWeek}.`,
+            sender: 'CS Treasury & Planning',
+            subject: `IMF Loan Tranche & Conditionality Briefing (Week ${nextWeek})`,
+            body: `The IMF board requires an excise tax hike on digital payments before releasing the KSh 35 Billion budget support loan.`,
             options: [
-              { text: 'Allocate Constituency Development Funds (-10B KSh, +8 Whip Score)', treasury: -10, whip: 8 },
-              { text: 'Hold Ground and Deny Discretionary Funds (-5 Whip Score, +5 Authority)', authority: 5, whip: -5 }
+              { text: 'Accept IMF Tax Mandate (+35B KSh Treasury, -12% Hustlers Approval, +6% Uprising)', treasury: 35, hustlers: -12, risk: 6 },
+              { text: 'Reject IMF Directive (-35B KSh Loan, +10% Hustlers Approval, -5% Uprising)', treasury: -10, hustlers: 10, risk: -5 }
             ]
           },
-          ...prev
-        ]);
+          {
+            sender: 'National Assembly Chief Whip',
+            subject: `Constituency Development Fund Motion (Week ${nextWeek})`,
+            body: `Backbench MPs threaten to boycott legislative business unless CDF funds are disbursed into county accounts.`,
+            options: [
+              { text: 'Disburse CDF Funds (-18B KSh Treasury, +12 Whip Score, -5% Impeachment Risk)', treasury: -18, whip: 12, impeachment: -5 },
+              { text: 'Refuse Discretionary Pay (-10 Whip Score, +5 Authority, +8% Impeachment Risk)', authority: 5, whip: -10, impeachment: 8 }
+            ]
+          },
+          {
+            sender: 'Inspector General of Police',
+            subject: `Security Alert: Regional Transport Strike (Week ${nextWeek})`,
+            body: `Matatu operators announce a nationwide shutdown over toll station rates on major highways.`,
+            options: [
+              { text: 'Subsidize Toll Charges (-6B KSh Treasury, -8% Uprising Risk, +6% Approval)', treasury: -6, risk: -8, publicApproval: 6 },
+              { text: 'Deploy Security Forces (+12% Uprising Risk, -8% Civil Society Approval)', risk: 12, civilSociety: -8 }
+            ]
+          }
+        ];
+
+        // Add dispatches to Inbox
+        const newMail = {
+          id: Date.now(),
+          ...dispatchPool[nextWeek % dispatchPool.length],
+          category: 'unread',
+          status: 'pending',
+          date: `Week ${nextWeek}`
+        };
+
+        setEmails(prev => [newMail, ...prev]);
+
+        // PROCEDURAL BILL GENERATOR (Generates new bills every 3 weeks)
+        if (nextWeek % 3 === 0) {
+          const newBill = {
+            id: Date.now(),
+            ministry: nextWeek % 2 === 0 ? 'Ministry of Agriculture' : 'Ministry of Health',
+            title: nextWeek % 2 === 0 ? `Fertilizer Subsidy & Produce Levy Bill (Week ${nextWeek})` : `Universal Healthcare Fund Amendment (Week ${nextWeek})`,
+            stage: 'Presidential Assent Desk',
+            description: nextWeek % 2 === 0 ? 'Imposes a statutory import duty on foreign grain to protect local farmers.' : 'Mandates 2.75% payroll deductions for universal care coverage.',
+            fiscalImpact: nextWeek % 2 === 0 ? '+20B KSh Agricultural Fund' : '+40B KSh Healthcare Reserve',
+            publicImpact: nextWeek % 2 === 0 ? '+12% Rural Approval, -6% Business' : '+8% Civil Society, -10% Hustlers',
+            status: 'pending'
+          };
+          setBills(prev => [newBill, ...prev]);
+        }
       };
 
+      // Handle Interactive Inbox Choices
       const handleMailChoice = (mail, option) => {
         if (option.authority) setAuthority(a => Math.min(100, Math.max(0, a + option.authority)));
         if (option.treasury) setTreasury(t => t + option.treasury);
         if (option.hustlers) setDemographics(d => ({ ...d, hustlers: Math.min(100, Math.max(0, d.hustlers + option.hustlers)) }));
+        if (option.civilSociety) setDemographics(d => ({ ...d, civilSociety: Math.min(100, Math.max(0, d.civilSociety + option.civilSociety)) }));
+        if (option.ruralFarmers) setDemographics(d => ({ ...d, ruralFarmers: Math.min(100, Math.max(0, d.ruralFarmers + option.ruralFarmers)) }));
         if (option.risk) setUprisingRisk(r => Math.min(100, Math.max(0, r + option.risk)));
+        if (option.impeachment) setImpeachmentRisk(i => Math.min(100, Math.max(0, i + option.impeachment)));
         if (option.whip) setWhipScore(w => Math.min(100, Math.max(0, w + option.whip)));
+        if (option.publicApproval) setPublicApproval(p => Math.min(100, Math.max(0, p + option.publicApproval)));
 
         setEmails(emails.map(e => e.id === mail.id ? { ...e, category: 'read', status: 'resolved' } : e));
         setSelectedMail(null);
       };
 
+      // Handle Grassroots Petitions
       const handlePetitionChoice = (pet, option) => {
         if (option.treasury) setTreasury(t => t + option.treasury);
         if (option.risk) setUprisingRisk(r => Math.min(100, Math.max(0, r + option.risk)));
+        if (option.civilSociety) setDemographics(d => ({ ...d, civilSociety: Math.min(100, Math.max(0, d.civilSociety + option.civilSociety)) }));
+
         setPetitions(petitions.filter(p => p.id !== pet.id));
       };
 
+      // Handle Legislative Assent / Veto
       const handleBillAction = (bill, action) => {
         if (action === 'assent') {
-          setTreasury(t => t + 65);
-          setPublicApproval(p => Math.max(10, p - 12));
-          setBills(bills.map(b => b.id === bill.id ? { ...b, stage: 'Enacted into Law', status: 'enacted' } : b));
+          setTreasury(t => t + 35);
+          setPublicApproval(p => Math.max(10, p - 6));
+          setBills(bills.map(b => b.id === bill.id ? { ...b, stage: 'Signed into Law', status: 'enacted' } : b));
         } else {
-          setWhipScore(w => Math.max(20, w - 8));
-          setBills(bills.map(b => b.id === bill.id ? { ...b, stage: 'Vetoed & Returned', status: 'vetoed' } : b));
+          setWhipScore(w => Math.max(20, w - 6));
+          setPublicApproval(p => Math.min(100, p + 5));
+          setBills(bills.map(b => b.id === bill.id ? { ...b, stage: 'Vetoed & Returned to Parliament', status: 'vetoed' } : b));
         }
-        setSelectedBill(null);
+      };
+
+      // Cabinet Reshuffle & Sack Controls
+      const sackMinister = (docket) => {
+        setCabinet(prev => ({ ...prev, [docket]: null }));
+        setAuthority(a => Math.max(10, a - 3));
       };
 
       const isCabinetComplete = Object.values(cabinet).every(val => val !== null);
@@ -201,7 +294,7 @@
       return (
         <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between">
           
-          {/* WEEK 1 INAUGURATION CABINET SETUP */}
+          {/* WEEK 1 INAUGURATION CABINET SELECTION */}
           {!inaugurated && (
             <div className="fixed inset-0 z-50 bg-slate-950/95 p-6 overflow-y-auto flex flex-col items-center">
               <div className="max-w-4xl w-full space-y-6 my-auto">
@@ -213,7 +306,7 @@
                     H.E. The President of Kenya, Commander-in-Chief
                   </h1>
                   <p className="text-slate-400 text-sm">
-                    Select your Cabinet Secretaries across all 8 core dockets to take your oath of office.
+                    Select your Cabinet Secretaries across all dockets to form your administration before taking office.
                   </p>
                 </div>
 
@@ -267,7 +360,7 @@
             </div>
           )}
 
-          {/* HEADER */}
+          {/* TOP DASHBOARD HEADER */}
           <header className="bg-slate-900 border-b border-slate-800 sticky top-0 z-40">
             <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
               <div>
@@ -288,11 +381,15 @@
                 </div>
                 <div className="bg-slate-950 border border-slate-800 rounded-lg p-2">
                   <div className="text-slate-400 text-[10px]">UPRISING RISK</div>
-                  <div className={`font-bold ${uprisingRisk > 50 ? 'text-red-400' : 'text-emerald-400'}`}>{uprisingRisk}%</div>
+                  <div className={`font-bold ${uprisingRisk > 50 ? 'text-red-400 animate-pulse' : 'text-emerald-400'}`}>{uprisingRisk}%</div>
+                </div>
+                <div className="bg-slate-950 border border-slate-800 rounded-lg p-2">
+                  <div className="text-slate-400 text-[10px]">IMPEACHMENT</div>
+                  <div className={`font-bold ${impeachmentRisk > 50 ? 'text-red-400' : 'text-amber-400'}`}>{impeachmentRisk}%</div>
                 </div>
                 <button 
                   onClick={advanceWeek}
-                  className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-4 py-2 rounded-lg font-black text-xs uppercase tracking-wider cursor-pointer"
+                  className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-4 py-2 rounded-lg font-black text-xs uppercase tracking-wider cursor-pointer shadow-md shadow-amber-500/10"
                 >
                   Advance Week &gt;
                 </button>
@@ -300,15 +397,15 @@
             </div>
           </header>
 
-          {/* TABS */}
+          {/* MAIN TABS NAVIGATION */}
           <main className="max-w-7xl mx-auto px-4 py-6 w-full flex-grow">
             <div className="flex border-b border-slate-800 gap-2 mb-6 overflow-x-auto pb-1">
               {[
                 { id: 'home', label: 'Executive Dashboard' },
                 { id: 'inbox', label: `Inbox (${emails.filter(e => e.category === 'unread').length})` },
-                { id: 'petitions', label: `Grassroots (${petitions.length})` },
-                { id: 'bills', label: 'Legislative Desk' },
-                { id: 'cabinet', label: 'Cabinet & Whip' },
+                { id: 'petitions', label: `Grassroots Petitions (${petitions.length})` },
+                { id: 'bills', label: `Assent Desk (${bills.filter(b => b.stage === 'Presidential Assent Desk').length})` },
+                { id: 'cabinet', label: 'Cabinet & Reshuffle' },
                 { id: 'military', label: 'KDF Command' },
                 { id: 'world', label: 'World Matrix' }
               ].map(tab => (
@@ -326,7 +423,7 @@
               ))}
             </div>
 
-            {/* TAB CONTENT */}
+            {/* TAB 1: EXECUTIVE DASHBOARD */}
             {activeTab === 'home' && (
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -335,7 +432,7 @@
                     <div className="text-2xl font-black text-slate-100">{publicApproval}%</div>
                   </div>
                   <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl">
-                    <span className="text-slate-400 text-xs font-semibold">Whip Control</span>
+                    <span className="text-slate-400 text-xs font-semibold">Whip Control Score</span>
                     <div className="text-2xl font-black text-slate-100">{whipScore}%</div>
                   </div>
                   <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl">
@@ -349,10 +446,10 @@
                 </div>
 
                 <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
-                  <h3 className="font-bold text-sm text-slate-200 uppercase border-b border-slate-800 pb-2">Demographic Approvals</h3>
+                  <h3 className="font-bold text-sm text-slate-200 uppercase border-b border-slate-800 pb-2">Demographic Coalition Breakdown</h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {Object.entries(demographics).map(([key, val]) => (
-                      <div key={key} className="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                      <div key={key} className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-1">
                         <div className="text-xs capitalize text-slate-300">{key}</div>
                         <div className="text-lg font-bold text-amber-400">{val}%</div>
                       </div>
@@ -362,11 +459,25 @@
               </div>
             )}
 
+            {/* TAB 2: PRESIDENTIAL INBOX */}
             {activeTab === 'inbox' && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
+                  <div className="flex border-b border-slate-800 gap-2 pb-2">
+                    {['unread', 'read'].map(cat => (
+                      <button
+                        key={cat}
+                        onClick={() => setSelectedInboxTab(cat)}
+                        className={`px-3 py-1 rounded text-xs capitalize font-semibold cursor-pointer ${
+                          selectedInboxTab === cat ? 'bg-amber-500 text-slate-950' : 'text-slate-400'
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
                   <div className="space-y-2">
-                    {emails.map(mail => (
+                    {emails.filter(e => e.category === selectedInboxTab).map(mail => (
                       <div
                         key={mail.id}
                         onClick={() => setSelectedMail(mail)}
@@ -374,7 +485,10 @@
                           selectedMail?.id === mail.id ? 'bg-amber-500/10 border-amber-500' : 'bg-slate-950 border-slate-800'
                         }`}
                       >
-                        <div className="font-bold text-slate-200">{mail.sender}</div>
+                        <div className="flex justify-between font-bold text-slate-200">
+                          <span>{mail.sender}</span>
+                          <span className="text-[10px] text-slate-500">{mail.date}</span>
+                        </div>
                         <div className="text-slate-300 truncate">{mail.subject}</div>
                       </div>
                     ))}
@@ -384,38 +498,54 @@
                 <div className="md:col-span-2 bg-slate-900 border border-slate-800 rounded-xl p-6">
                   {selectedMail ? (
                     <div className="space-y-4">
-                      <h2 className="text-lg font-bold text-amber-400">{selectedMail.subject}</h2>
-                      <p className="text-sm text-slate-300">{selectedMail.body}</p>
-                      {selectedMail.status === 'pending' && (
+                      <div className="border-b border-slate-800 pb-2">
+                        <h2 className="text-lg font-bold text-amber-400">{selectedMail.subject}</h2>
+                        <div className="text-xs text-slate-400">From: {selectedMail.sender} | {selectedMail.date}</div>
+                      </div>
+                      <p className="text-sm text-slate-300 leading-relaxed">{selectedMail.body}</p>
+                      {selectedMail.status === 'pending' ? (
                         <div className="space-y-2 pt-4 border-t border-slate-800">
+                          <div className="text-xs font-bold text-slate-400 uppercase">Issue Presidential Order:</div>
                           {selectedMail.options.map((opt, idx) => (
                             <button
                               key={idx}
                               onClick={() => handleMailChoice(selectedMail, opt)}
-                              className="w-full text-left p-3 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 text-xs text-slate-200 cursor-pointer"
+                              className="w-full text-left p-3 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 text-xs text-slate-200 cursor-pointer transition-all"
                             >
                               {opt.text}
                             </button>
                           ))}
                         </div>
+                      ) : (
+                        <div className="pt-3 text-xs text-emerald-400 font-semibold border-t border-slate-800">
+                          ✓ Presidential Directive Actioned and Dispatched.
+                        </div>
                       )}
                     </div>
                   ) : (
-                    <div className="h-full flex items-center justify-center text-slate-500 text-xs">Select an email dispatch.</div>
+                    <div className="h-full flex items-center justify-center text-slate-500 text-xs">
+                      Select an incoming dispatch to issue presidential orders.
+                    </div>
                   )}
                 </div>
               </div>
             )}
 
+            {/* TAB 3: GRASSROOTS PETITIONS */}
             {activeTab === 'petitions' && (
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {petitions.map(pet => (
+                  {petitions.length > 0 ? petitions.map(pet => (
                     <div key={pet.id} className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
-                      <div className="font-bold text-amber-400 text-xs">{pet.organization}</div>
+                      <div className="flex justify-between items-center border-b border-slate-800 pb-2">
+                        <span className="font-bold text-amber-400 text-xs">{pet.organization}</span>
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/20 text-red-400 border border-red-500/30">
+                          {pet.urgency}
+                        </span>
+                      </div>
                       <h4 className="font-bold text-sm text-slate-100">{pet.title}</h4>
                       <p className="text-xs text-slate-300">{pet.description}</p>
-                      <div className="space-y-2">
+                      <div className="space-y-2 pt-2">
                         {pet.options.map((opt, i) => (
                           <button
                             key={i}
@@ -427,69 +557,125 @@
                         ))}
                       </div>
                     </div>
-                  ))}
+                  )) : (
+                    <div className="col-span-2 text-center py-10 text-slate-500 text-xs">
+                      No active grassroots strikes or petitions currently logged. Advance week to update monitoring.
+                    </div>
+                  )}
                 </div>
               </div>
             )}
 
+            {/* TAB 4: LEGISLATIVE ASSENT DESK */}
             {activeTab === 'bills' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {bills.map(bill => (
                   <div key={bill.id} className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
-                    <div className="text-xs text-amber-400 font-semibold">{bill.ministry}</div>
+                    <div className="flex justify-between items-center border-b border-slate-800 pb-2">
+                      <span className="text-xs text-amber-400 font-semibold">{bill.ministry}</span>
+                      <span className="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-slate-300 font-bold">{bill.stage}</span>
+                    </div>
                     <h4 className="font-bold text-sm text-slate-100">{bill.title}</h4>
                     <p className="text-xs text-slate-300">{bill.description}</p>
                     <div className="text-[11px] bg-slate-950 p-3 rounded border border-slate-800 space-y-1">
                       <div className="text-emerald-400">{bill.fiscalImpact}</div>
                       <div className="text-red-400">{bill.publicImpact}</div>
                     </div>
-                    {bill.stage === 'Presidential Assent Desk' && (
+                    {bill.stage === 'Presidential Assent Desk' ? (
                       <div className="flex gap-2">
                         <button onClick={() => handleBillAction(bill, 'assent')} className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded text-xs cursor-pointer">Sign into Law</button>
                         <button onClick={() => handleBillAction(bill, 'veto')} className="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-2 rounded text-xs cursor-pointer">Veto Bill</button>
                       </div>
+                    ) : (
+                      <div className="text-xs text-slate-400 italic">Bill status updated in State Gazette.</div>
                     )}
                   </div>
                 ))}
               </div>
             )}
 
+            {/* TAB 5: CABINET & RESHUFFLE ENGINE */}
             {activeTab === 'cabinet' && (
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                {Object.entries(cabinet).map(([docket, min]) => (
-                  <div key={docket} className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-2">
-                    <span className="text-[10px] text-amber-400 font-bold uppercase">CS {docket}</span>
-                    <div className="font-bold text-sm text-slate-100">{min?.name || 'Vacant'}</div>
-                    {min && (
-                      <div className="text-[11px] text-slate-400 space-y-1 pt-1 border-t border-slate-800">
-                        <div>Competence: <span className="text-slate-200">{min.competence}%</span></div>
-                        <div>Region: <span className="text-slate-200">{min.region}</span></div>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center border-b border-slate-800 pb-2">
+                  <h3 className="font-bold text-sm text-slate-200 uppercase">Cabinet Secretaries & Dockets</h3>
+                  <span className="text-xs text-slate-400">Click "Sack CS" to re-open docket for selection</span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  {Object.entries(cabinet).map(([docket, min]) => (
+                    <div key={docket} className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] text-amber-400 font-bold uppercase">CS {docket}</span>
+                        {min && (
+                          <button 
+                            onClick={() => sackMinister(docket)} 
+                            className="text-[10px] bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white px-2 py-0.5 rounded cursor-pointer"
+                          >
+                            Sack CS
+                          </button>
+                        )}
                       </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {activeTab === 'military' && (
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl">
-                    <div className="text-xs text-slate-400">Readiness</div>
-                    <div className="text-2xl font-black text-emerald-400">{military.readiness}%</div>
-                  </div>
-                  <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl">
-                    <div className="text-xs text-slate-400">Total Troops</div>
-                    <div className="text-2xl font-black text-slate-100">{military.troopCount.toLocaleString()}</div>
-                  </div>
-                  <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl">
-                    <div className="text-xs text-slate-400">Deployed</div>
-                    <div className="text-2xl font-black text-amber-400">{military.deployedTroops.toLocaleString()}</div>
-                  </div>
+                      <div className="font-bold text-sm text-slate-100">{min?.name || 'Vacant / Unappointed'}</div>
+                      {min ? (
+                        <div className="text-[11px] text-slate-400 space-y-1 pt-1 border-t border-slate-800">
+                          <div>Competence: <span className="text-slate-200">{min.competence}%</span></div>
+                          <div>Region: <span className="text-slate-200">{min.region}</span></div>
+                        </div>
+                      ) : (
+                        <div className="space-y-1 pt-2">
+                          {candidatePool[docket].slice(0, 2).map(c => (
+                            <button
+                              key={c.name}
+                              onClick={() => setCabinet(prev => ({ ...prev, [docket]: c }))}
+                              className="w-full text-left p-1.5 rounded bg-slate-950 hover:bg-slate-800 border border-slate-800 text-[10px] text-slate-200 cursor-pointer"
+                            >
+                              Appoint {c.name}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
 
+            {/* TAB 6: KDF MILITARY COMMAND */}
+            {activeTab === 'military' && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+                    <div className="text-xs text-slate-400">Combat Readiness</div>
+                    <div className="text-2xl font-black text-emerald-400">{military.readiness}%</div>
+                  </div>
+                  <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+                    <div className="text-xs text-slate-400">Active Troop Capacity</div>
+                    <div className="text-2xl font-black text-slate-100">{military.troopCount.toLocaleString()}</div>
+                  </div>
+                  <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+                    <div className="text-xs text-slate-400">Deployed Force</div>
+                    <div className="text-2xl font-black text-amber-400">{military.deployedTroops.toLocaleString()}</div>
+                  </div>
+                </div>
+
+                <h3 className="font-bold text-sm text-slate-200 uppercase border-b border-slate-800 pb-2">Active Deployments</h3>
+                <div className="space-y-3">
+                  {military.activeOperations.map(op => (
+                    <div key={op.id} className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex justify-between items-center text-xs">
+                      <div>
+                        <div className="font-bold text-slate-100 text-sm">{op.name}</div>
+                        <div className="text-slate-400">Troops Committed: {op.troops} | Sector Cost: KSh {op.cost}B / Month</div>
+                      </div>
+                      <span className="px-2 py-1 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold">
+                        Risk: {op.risk}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* TAB 7: WORLD MATRIX */}
             {activeTab === 'world' && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {countries.map(c => (
@@ -499,7 +685,7 @@
                       <span className="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-amber-400 font-bold">{c.status}</span>
                     </div>
                     <div className="text-xs text-slate-300">
-                      <div>Alignment: <span className="text-emerald-400">{c.relation}%</span></div>
+                      <div>Alignment Index: <span className="text-emerald-400">{c.relation}%</span></div>
                       <div className="mt-1 text-[11px] text-slate-400 bg-slate-950 p-2 rounded border border-slate-800">Pact: {c.tradeDeal}</div>
                     </div>
                   </div>
@@ -509,7 +695,7 @@
           </main>
 
           <footer className="bg-slate-900 border-t border-slate-800 text-center text-xs text-slate-500 py-3">
-            Statecraft Kenya: Modern Presidential Simulator • Executive Suite
+            Statecraft Kenya: Modern Presidential Simulator • Executive Command Suite
           </footer>
         </div>
       );
