@@ -1,801 +1,521 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Building2, Users, ShieldAlert, Award, FileText, Globe, Mail, ChevronRight, 
-  CheckCircle2, XCircle, AlertTriangle, Scale, Coins, Swords, Crosshair, 
-  MapPin, Landmark, Vote, UserCheck, Flame, RefreshCw, Eye, ThumbsUp, ThumbsDown
-} from 'lucide-react';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Statecraft Kenya: Modern Presidential Simulator</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- React & ReactDOM CDNs -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <!-- Babel Standalone for JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans selection:bg-amber-500 selection:text-slate-950">
+  <div id="root"></div>
 
-export default function StatecraftKenya() {
-  // Game Setup & Progress State
-  const [inaugurated, setInaugurated] = useState(false);
-  const [week, setWeek] = useState(1);
-  const [activeTab, setActiveTab] = useState('home');
-  const [selectedInboxTab, setSelectedInboxTab] = useState('unread');
-  const [selectedMail, setSelectedMail] = useState(null);
-  const [selectedBill, setSelectedBill] = useState(null);
-  const [selectedCountry, setSelectedCountry] = useState(null);
-  const [selectedPet, setSelectedPet] = useState(null);
+  <script type="text/babel">
+    const { useState, useEffect } = React;
 
-  // Presidential & State Metrics
-  const [authority, setAuthority] = useState(85);
-  const [treasury, setTreasury] = useState(420); // In KSh Billions
-  const [debtRatio, setDebtRatio] = useState(68); // % of GDP
-  const [whipScore, setWhipScore] = useState(72); // Parliamentary Majority Control
-  const [inflation, setInflation] = useState(6.4); // %
-  const [publicApproval, setPublicApproval] = useState(62);
-  const [uprisingRisk, setUprisingRisk] = useState(18); // Citizen Resistance Gauge
-  const [impeachmentRisk, setImpeachmentRisk] = useState(12); // Parliamentary Danger Meter
+    function App() {
+      const [inaugurated, setInaugurated] = useState(false);
+      const [week, setWeek] = useState(1);
+      const [activeTab, setActiveTab] = useState('home');
+      const [selectedInboxTab, setSelectedInboxTab] = useState('unread');
+      const [selectedMail, setSelectedMail] = useState(null);
+      const [selectedBill, setSelectedBill] = useState(null);
 
-  // Demographic Approval Ratings
-  const [demographics, setDemographics] = useState({
-    hustlers: 65,
-    civilSociety: 48,
-    businessElites: 70,
-    ruralFarmers: 60
-  });
+      // State Metrics
+      const [authority, setAuthority] = useState(85);
+      const [treasury, setTreasury] = useState(420);
+      const [debtRatio, setDebtRatio] = useState(68);
+      const [whipScore, setWhipScore] = useState(72);
+      const [inflation, setInflation] = useState(6.4);
+      const [publicApproval, setPublicApproval] = useState(62);
+      const [uprisingRisk, setUprisingRisk] = useState(18);
+      const [impeachmentRisk, setImpeachmentRisk] = useState(12);
 
-  // KDF Military State
-  const [military, setMilitary] = useState({
-    readiness: 88,
-    troopCount: 45000,
-    deployedTroops: 6500,
-    activeOperations: [
-      { id: 1, name: 'Operation Linda Mpaka (Somalia Border)', troops: 3500, risk: 'Medium', cost: 1.2 },
-      { id: 2, name: 'EAC Regional Force (Eastern DRC)', troops: 3000, risk: 'High', cost: 2.5 }
-    ]
-  });
+      const [demographics, setDemographics] = useState({
+        hustlers: 65,
+        civilSociety: 48,
+        businessElites: 70,
+        ruralFarmers: 60
+      });
 
-  // Cabinet Nominees Pool & Selections
-  const candidatePool = {
-    treasury: [
-      { name: 'Dr. John K. Njuguna', competence: 92, loyalty: 65, vetting: 80, region: 'Central' },
-      { name: 'Hon. Wycliffe O. Musalia', competence: 78, loyalty: 90, vetting: 95, region: 'Western' },
-      { name: 'Prof. Nzioka Waita', competence: 88, loyalty: 70, vetting: 85, region: 'Eastern' }
-    ],
-    interior: [
-      { name: 'Gen. Raymond O. Kibwana', competence: 94, loyalty: 85, vetting: 90, region: 'Rift Valley' },
-      { name: 'Hon. Kithure A. Kindiki', competence: 85, loyalty: 95, vetting: 88, region: 'Eastern' },
-      { name: 'Aisha J. Mohamed', competence: 80, loyalty: 75, vetting: 78, region: 'Coast' }
-    ],
-    foreign: [
-      { name: 'Amb. Macharia Kamau', competence: 90, loyalty: 70, vetting: 85, region: 'Central' },
-      { name: 'Dr. Korir A. Sing’oei', competence: 86, loyalty: 92, vetting: 90, region: 'Rift Valley' }
-    ],
-    health: [
-      { name: 'Dr. Nakhumicha S. Wafula', competence: 72, loyalty: 88, vetting: 75, region: 'Western' },
-      { name: 'Dr. Mercy Mwangangi', competence: 89, loyalty: 75, vetting: 92, region: 'Eastern' }
-    ],
-    defense: [
-      { name: 'Hon. Aden B. Duale', competence: 85, loyalty: 94, vetting: 88, region: 'North Eastern' },
-      { name: 'Gen. Samson J. Mwathethe', competence: 95, loyalty: 80, vetting: 94, region: 'Coast' }
-    ],
-    education: [
-      { name: 'Prof. Ezekiel O. Machogu', competence: 75, loyalty: 90, vetting: 82, region: 'Nyanza' },
-      { name: 'Dr. Beatrice Inyangala', competence: 88, loyalty: 82, vetting: 86, region: 'Western' }
-    ],
-    agri: [
-      { name: 'Hon. Linturi F. Mithika', competence: 70, loyalty: 85, vetting: 70, region: 'Eastern' },
-      { name: 'Dr. Andrew Tuimur', competence: 86, loyalty: 88, vetting: 90, region: 'Rift Valley' }
-    ],
-    ag: [
-      { name: 'Justin B. Muturi', competence: 88, loyalty: 90, vetting: 85, region: 'Central' },
-      { name: 'Dorcas A. Oduor', competence: 92, loyalty: 85, vetting: 95, region: 'Nyanza' }
-    ]
-  };
+      const [military, setMilitary] = useState({
+        readiness: 88,
+        troopCount: 45000,
+        deployedTroops: 6500,
+        activeOperations: [
+          { id: 1, name: 'Operation Linda Mpaka (Somalia Border)', troops: 3500, risk: 'Medium', cost: 1.2 },
+          { id: 2, name: 'EAC Regional Force (Eastern DRC)', troops: 3000, risk: 'High', cost: 2.5 }
+        ]
+      });
 
-  const [cabinet, setCabinet] = useState({
-    treasury: null, interior: null, foreign: null, health: null,
-    defense: null, education: null, agri: null, ag: null
-  });
+      const candidatePool = {
+        treasury: [
+          { name: 'Dr. John K. Njuguna', competence: 92, loyalty: 65, region: 'Central' },
+          { name: 'Hon. Wycliffe O. Musalia', competence: 78, loyalty: 90, region: 'Western' },
+          { name: 'Prof. Nzioka Waita', competence: 88, loyalty: 70, region: 'Eastern' }
+        ],
+        interior: [
+          { name: 'Gen. Raymond O. Kibwana', competence: 94, loyalty: 85, region: 'Rift Valley' },
+          { name: 'Hon. Kithure A. Kindiki', competence: 85, loyalty: 95, region: 'Eastern' },
+          { name: 'Aisha J. Mohamed', competence: 80, loyalty: 75, region: 'Coast' }
+        ],
+        foreign: [
+          { name: 'Amb. Macharia Kamau', competence: 90, loyalty: 70, region: 'Central' },
+          { name: 'Dr. Korir A. Sing’oei', competence: 86, loyalty: 92, region: 'Rift Valley' }
+        ],
+        health: [
+          { name: 'Dr. Nakhumicha S. Wafula', competence: 72, loyalty: 88, region: 'Western' },
+          { name: 'Dr. Mercy Mwangangi', competence: 89, loyalty: 75, region: 'Eastern' }
+        ],
+        defense: [
+          { name: 'Hon. Aden B. Duale', competence: 85, loyalty: 94, region: 'North Eastern' },
+          { name: 'Gen. Samson J. Mwathethe', competence: 95, loyalty: 80, region: 'Coast' }
+        ],
+        education: [
+          { name: 'Prof. Ezekiel O. Machogu', competence: 75, loyalty: 90, region: 'Nyanza' },
+          { name: 'Dr. Beatrice Inyangala', competence: 88, loyalty: 82, region: 'Western' }
+        ],
+        agri: [
+          { name: 'Hon. Linturi F. Mithika', competence: 70, loyalty: 85, region: 'Eastern' },
+          { name: 'Dr. Andrew Tuimur', competence: 86, loyalty: 88, region: 'Rift Valley' }
+        ],
+        ag: [
+          { name: 'Justin B. Muturi', competence: 88, loyalty: 90, region: 'Central' },
+          { name: 'Dorcas A. Oduor', competence: 92, loyalty: 85, region: 'Nyanza' }
+        ]
+      };
 
-  // Dynamic Mail Engine
-  const [emails, setEmails] = useState([
-    {
-      id: 1,
-      sender: 'State House Chief of Staff',
-      subject: 'Inaugural Executive Briefing & Priority Outlook',
-      category: 'unread',
-      status: 'pending',
-      date: 'Week 1',
-      body: 'Your Excellency, the Cabinet swearing-in protocol is complete. Intelligence reports indicate brewing public agitation over high fuel prices and unfulfilled subsidy promises. The National Treasury recommends immediate tax restructuring.',
-      options: [
-        { text: 'Authorize Emergency Fuel Cushioning Levy (-15B KSh, +8% Hustlers Approval)', authority: -3, treasury: -15, hustlers: 8, risk: -5 },
-        { text: 'Maintain Strict Budgetary Austerity (+25B KSh Treasury, -10% Hustlers Approval)', authority: 2, treasury: 25, hustlers: -10, risk: 8 }
-      ]
-    },
-    {
-      id: 2,
-      sender: 'KDF Chief of Defence Forces',
-      subject: 'Border Incursion Threat - Sector North',
-      category: 'unread',
-      status: 'pending',
-      date: 'Week 1',
-      body: 'General Command reports renewed militia movements along the northern frontier. Intelligence suggests foreign-backed insurgents are testing Kenya’s tactical perimeter.',
-      options: [
-        { text: 'Deploy 2,500 Special Operations Troops (-5B KSh, +5% Military Readiness)', authority: 5, treasury: -5, readiness: 5, risk: -2 },
-        { text: 'Seek EAC Bilateral Diplomatic Resolution (+3 Diplomatic Favor, -4% Authority)', authority: -4, treasury: 0, readiness: -2, risk: 3 }
-      ]
-    }
-  ]);
+      const [cabinet, setCabinet] = useState({
+        treasury: null, interior: null, foreign: null, health: null,
+        defense: null, education: null, agri: null, ag: null
+      });
 
-  // Dynamic Grassroots Petitions Channel (Citizen Resistance Engine)
-  const [petitions, setPetitions] = useState([
-    {
-      id: 101,
-      organization: 'Kenya Medical Practitioners Union (KMPDU)',
-      title: 'Demands for CBA Implementation & Intern Posting',
-      urgency: 'HIGH',
-      description: 'Public health workers threaten a nation-wide strike within 7 days unless funds are released for medical interns and salaries.',
-      options: [
-        { text: 'Accede to Union Demands (-12B KSh Treasury, -10% Uprising Risk, +12% Civil Society)', treasury: -12, risk: -10, civilSociety: 12 },
-        { text: 'Declare Strike Illegal & Enforce Mandatory Work Order (-8% Civil Society, +15% Uprising Risk)', treasury: 0, risk: 15, civilSociety: -8 }
-      ]
-    },
-    {
-      id: 102,
-      organization: 'Gen-Z Action & Accountability Coalition',
-      title: 'Petition Against Digital Service Tax Increase',
-      urgency: 'CRITICAL',
-      description: 'Youth organizations are mobilizing peaceful protests across major cities demanding the immediate revocation of the proposed 5% Digital Service Tax.',
-      options: [
-        { text: 'Scrap Digital Tax (-8B KSh Treasury, -15% Uprising Risk, +15% Hustlers)', treasury: -8, risk: -15, hustlers: 15 },
-        { text: 'Deploy Anti-Riot Police & Push Bill Forward (+10B KSh, +22% Uprising Risk, +10% Impeachment Risk)', treasury: 10, risk: 22, impeachment: 10, hustlers: -18 }
-      ]
-    }
-  ]);
-
-  // Legislative Bills Engine
-  const [bills, setBills] = useState([
-    {
-      id: 201,
-      ministry: 'National Treasury',
-      title: 'Finance Bill 2026 (Tax Rationalization)',
-      stage: 'Presidential Assent Desk',
-      description: 'Introduces a 2.5% Motor Vehicle Circulation Tax and adjusts VAT exemptions to satisfy IMF structural benchmarks.',
-      fiscalImpact: '+65B KSh Annual Revenue',
-      publicImpact: '-14% Overall Public Approval',
-      whipRequirement: 'Simple Majority (Passed Parliament 182-145)',
-      status: 'pending'
-    },
-    {
-      id: 202,
-      ministry: 'Ministry of Health',
-      title: 'Social Health Insurance (Universal Care) Amendment',
-      stage: 'Committee Review',
-      description: 'Mandates a 2.75% deductions model for all formal sector workers to fund grassroots dispensaries.',
-      fiscalImpact: '+30B KSh Health Fund',
-      publicImpact: '+10% Rural Farmers Approval, -8% Business Elites',
-      whipRequirement: 'Requires Whip Score 65+',
-      status: 'active'
-    }
-  ]);
-
-  // Sectoral Budget Allocation & Tax Controls
-  const [budget, setBudget] = useState({
-    education: 180, // Billions
-    health: 95,
-    infrastructure: 210,
-    defense: 140,
-    agriculture: 65,
-    devolution: 385,
-    vatRate: 16, // %
-    fuelLevy: 18 // KSh / Liter
-  });
-
-  // Global Diplomacy Matrix
-  const [countries, setCountries] = useState([
-    { id: 'UG', name: 'Uganda', region: 'EAC Ally', relation: 85, status: 'Ally', tradeDeal: 'Active EAC Transit Tariff Waiver', leverage: 'High' },
-    { id: 'TZ', name: 'Tanzania', region: 'EAC Partner', relation: 65, status: 'Neutral', tradeDeal: 'Non-Tariff Barrier Disputes', leverage: 'Medium' },
-    { id: 'CN', name: 'China', region: 'Global Superpower', relation: 78, status: 'Major Creditor', tradeDeal: 'SGR Refinancing & Belt/Road', leverage: 'Critical' },
-    { id: 'US', name: 'United States', region: 'Global Superpower', relation: 80, status: 'Strategic Security Partner', tradeDeal: 'STIP Trade Negotiations', leverage: 'High' },
-    { id: 'UK', name: 'United Kingdom', region: 'Western Bloc', relation: 75, status: 'Trade Partner', tradeDeal: 'EPA Tea & Horticulture Tariff-Free', leverage: 'Medium' },
-    { id: 'ET', name: 'Ethiopia', region: 'Horn of Africa', relation: 70, status: 'Neutral', tradeDeal: 'LAPSSET Corridor Agreement', leverage: 'Medium' },
-    { id: 'SO', name: 'Somalia', region: 'Horn of Africa', relation: 52, status: 'Tense Security Partner', tradeDeal: 'KDF Counter-Terrorism Accord', leverage: 'Strategic' }
-  ]);
-
-  // Complete Weekly Progression Logic (1 - 240 Weeks)
-  const advanceWeek = () => {
-    const newWeek = week + 1;
-    setWeek(newWeek);
-
-    // Dynamic Procedural Stat Fluctuations
-    const updatedDebt = Math.min(95, debtRatio + (budget.infrastructure + budget.defense > 300 ? 0.3 : -0.1));
-    const updatedInflation = Math.max(3.5, inflation + (budget.vatRate > 16 ? 0.2 : -0.1));
-    setDebtRatio(parseFloat(updatedDebt.toFixed(1)));
-    setInflation(parseFloat(updatedInflation.toFixed(1)));
-
-    // Resistance & Impeachment Trigger Calculations
-    let newUprising = uprisingRisk;
-    if (publicApproval < 40) newUprising += 4;
-    if (inflation > 7.5) newUprising += 3;
-    if (publicApproval > 60) newUprising = Math.max(5, newUprising - 3);
-
-    let newImpeachment = impeachmentRisk;
-    if (whipScore < 50) newImpeachment += 5;
-    if (newUprising > 70) newImpeachment += 4;
-    if (whipScore > 75) newImpeachment = Math.max(5, newImpeachment - 2);
-
-    setUprisingRisk(Math.min(100, Math.max(0, newUprising)));
-    setImpeachmentRisk(Math.min(100, Math.max(0, newImpeachment)));
-
-    // Weekly Dynamic Mail Injection
-    const generateWeeklyScenario = (w) => {
-      const dispatchTemplates = [
+      const [emails, setEmails] = useState([
         {
-          sender: 'CS National Treasury',
-          subject: `IMF Article IV Consultation Briefing (Week ${w})`,
-          body: 'The IMF mission has concluded its quarterly review. Disbursement of the KSh 45 Billion loan tranche is contingent on raising fuel excise levies.',
+          id: 1,
+          sender: 'State House Chief of Staff',
+          subject: 'Inaugural Executive Briefing & Priority Outlook',
+          category: 'unread',
+          status: 'pending',
+          date: 'Week 1',
+          body: 'Your Excellency, the Cabinet swearing-in protocol is complete. Intelligence reports indicate brewing public agitation over high fuel prices and unfulfilled subsidy promises. The National Treasury recommends immediate tax restructuring.',
           options: [
-            { text: 'Implement IMF Mandated Excise Increase (+45B KSh Treasury, +8% Inflation, -12% Approval)', authority: 3, treasury: 45, hustlers: -12, risk: 10 },
-            { text: 'Reject IMF Directive (-45B KSh Loan, +15% Approval, +5% Debt Pressure)', authority: -5, treasury: -15, hustlers: 15, risk: -5 }
-          ]
-        },
-        {
-          sender: 'Inspector General of Police',
-          subject: `Security Briefing: Rift Valley Agricultural Security (Week ${w})`,
-          body: 'Banditry escalates along the Kerio Valley belt. Pastoralist groups threaten to shut down transport corridors.',
-          options: [
-            { text: 'Deploy Joint KDF-Police Taskforce (-4B KSh, +6% Authority, -5% Uprising Risk)', authority: 6, treasury: -4, readiness: 4, risk: -5 },
-            { text: 'Initiate Regional Peace Baraza (-1B KSh, +5% Rural Approval)', authority: 0, treasury: -1, ruralFarmers: 5, risk: 0 }
-          ]
-        },
-        {
-          sender: 'National Assembly Chief Whip',
-          subject: `Backbench Rebellion Warning (Week ${w})`,
-          body: 'Rift Valley and Coast MPs are threatening to join opposition forces to block government statutory instruments unless CDF allocations are disbursed.',
-          options: [
-            { text: 'Release KSh 20 Billion CDF Allocation (-20B KSh, +12 Whip Score, -8% Impeachment Risk)', treasury: -20, whip: 12, impeachment: -8 },
-            { text: 'Enforce Executive Party Discipline (-10 Whip Score, +5 Authority, +10% Impeachment Risk)', authority: 5, whip: -10, impeachment: 10 }
+            { text: 'Authorize Emergency Fuel Cushioning Levy (-15B KSh, +8% Hustlers Approval)', authority: -3, treasury: -15, hustlers: 8, risk: -5 },
+            { text: 'Maintain Strict Budgetary Austerity (+25B KSh Treasury, -10% Hustlers Approval)', authority: 2, treasury: 25, hustlers: -10, risk: 8 }
           ]
         }
-      ];
-
-      const template = dispatchTemplates[w % dispatchTemplates.length];
-      return {
-        id: Date.now(),
-        sender: template.sender,
-        subject: template.subject,
-        category: 'unread',
-        status: 'pending',
-        date: `Week ${w}`,
-        body: template.body,
-        options: template.options
-      };
-    };
-
-    setEmails(prev => [generateWeeklyScenario(newWeek), ...prev]);
-
-    // Random Procedural Citizen Petition Injection
-    if (newWeek % 2 === 0) {
-      setPetitions(prev => [
-        {
-          id: Date.now(),
-          organization: newWeek % 4 === 0 ? 'National Transport Association (Matatu Welfare)' : 'Coffee & Tea Smallholders Federation',
-          title: newWeek % 4 === 0 ? 'Fares Strike Notice over Toll Fees' : 'Guaranteed Minimum Returns Injunction',
-          urgency: 'HIGH',
-          description: newWeek % 4 === 0 ? 'Operators threaten to block Thika Superhighway over expressway congestion pricing.' : 'Farmers demand state subsidy payouts prior to harvesting season.',
-          options: [
-            { text: 'Grant Temporary Relief (-6B KSh Treasury, -8% Uprising Risk, +10% Approval)', treasury: -6, risk: -8, publicApproval: 5 },
-            { text: 'Reject Demands (+12% Uprising Risk, -10% Demographics)', treasury: 0, risk: 12, publicApproval: -6 }
-          ]
-        },
-        ...prev
       ]);
-    }
-  };
 
-  // Choice Execution Engine for Inbox Emails
-  const handleMailChoice = (mail, option) => {
-    if (option.authority) setAuthority(a => Math.min(100, Math.max(0, a + option.authority)));
-    if (option.treasury) setTreasury(t => t + option.treasury);
-    if (option.hustlers) setDemographics(d => ({ ...d, hustlers: Math.min(100, Math.max(0, d.hustlers + option.hustlers)) }));
-    if (option.civilSociety) setDemographics(d => ({ ...d, civilSociety: Math.min(100, Math.max(0, d.civilSociety + option.civilSociety)) }));
-    if (option.ruralFarmers) setDemographics(d => ({ ...d, ruralFarmers: Math.min(100, Math.max(0, d.ruralFarmers + option.ruralFarmers)) }));
-    if (option.risk) setUprisingRisk(r => Math.min(100, Math.max(0, r + option.risk)));
-    if (option.impeachment) setImpeachmentRisk(i => Math.min(100, Math.max(0, i + option.impeachment)));
-    if (option.whip) setWhipScore(w => Math.min(100, Math.max(0, w + option.whip)));
-    if (option.readiness) setMilitary(m => ({ ...m, readiness: Math.min(100, Math.max(0, m.readiness + option.readiness)) }));
+      const [petitions, setPetitions] = useState([
+        {
+          id: 101,
+          organization: 'Kenya Medical Practitioners Union (KMPDU)',
+          title: 'Demands for CBA Implementation & Intern Posting',
+          urgency: 'HIGH',
+          description: 'Public health workers threaten a nation-wide strike within 7 days unless funds are released for medical interns.',
+          options: [
+            { text: 'Accede to Union Demands (-12B KSh Treasury, -10% Uprising Risk)', treasury: -12, risk: -10 },
+            { text: 'Declare Strike Illegal & Enforce Mandatory Work Order (+15% Uprising Risk)', treasury: 0, risk: 15 }
+          ]
+        }
+      ]);
 
-    setEmails(emails.map(e => e.id === mail.id ? { ...e, category: 'read', status: 'resolved' } : e));
-    setSelectedMail(null);
-  };
+      const [bills, setBills] = useState([
+        {
+          id: 201,
+          ministry: 'National Treasury',
+          title: 'Finance Bill 2026 (Tax Rationalization)',
+          stage: 'Presidential Assent Desk',
+          description: 'Introduces a 2.5% Motor Vehicle Circulation Tax and adjusts VAT exemptions.',
+          fiscalImpact: '+65B KSh Annual Revenue',
+          publicImpact: '-14% Overall Public Approval',
+          status: 'pending'
+        }
+      ]);
 
-  // Choice Execution Engine for Grassroots Petitions
-  const handlePetitionChoice = (pet, option) => {
-    if (option.treasury) setTreasury(t => t + option.treasury);
-    if (option.risk) setUprisingRisk(r => Math.min(100, Math.max(0, r + option.risk)));
-    if (option.impeachment) setImpeachmentRisk(i => Math.min(100, Math.max(0, i + option.impeachment)));
-    if (option.hustlers) setDemographics(d => ({ ...d, hustlers: Math.min(100, Math.max(0, d.hustlers + option.hustlers)) }));
-    if (option.civilSociety) setDemographics(d => ({ ...d, civilSociety: Math.min(100, Math.max(0, d.civilSociety + option.civilSociety)) }));
+      const [countries, setCountries] = useState([
+        { id: 'UG', name: 'Uganda', region: 'EAC Ally', relation: 85, status: 'Ally', tradeDeal: 'Active EAC Transit Tariff Waiver' },
+        { id: 'TZ', name: 'Tanzania', region: 'EAC Partner', relation: 65, status: 'Neutral', tradeDeal: 'Non-Tariff Barrier Disputes' },
+        { id: 'CN', name: 'China', region: 'Global Superpower', relation: 78, status: 'Major Creditor', tradeDeal: 'SGR Refinancing & Belt/Road' },
+        { id: 'US', name: 'United States', region: 'Global Superpower', relation: 80, status: 'Strategic Security Partner', tradeDeal: 'STIP Trade Negotiations' }
+      ]);
 
-    setPetitions(petitions.filter(p => p.id !== pet.id));
-    setSelectedPet(null);
-  };
+      const advanceWeek = () => {
+        const newWeek = week + 1;
+        setWeek(newWeek);
+        
+        // Random procedural scenario
+        setEmails(prev => [
+          {
+            id: Date.now(),
+            sender: 'National Assembly Chief Whip',
+            subject: `Backbench Policy Briefing (Week ${newWeek})`,
+            body: `Your Excellency, backbenchers are demanding consultations regarding upcoming development fund disbursements for Week ${newWeek}.`,
+            options: [
+              { text: 'Allocate Constituency Development Funds (-10B KSh, +8 Whip Score)', treasury: -10, whip: 8 },
+              { text: 'Hold Ground and Deny Discretionary Funds (-5 Whip Score, +5 Authority)', authority: 5, whip: -5 }
+            ]
+          },
+          ...prev
+        ]);
+      };
 
-  // Bill Assent & Veto Mechanics
-  const handleBillAction = (bill, action) => {
-    if (action === 'assent') {
-      setTreasury(t => t + 65);
-      setPublicApproval(p => Math.max(10, p - 12));
-      setUprisingRisk(r => Math.min(100, r + 8));
-      setBills(bills.map(b => b.id === bill.id ? { ...b, stage: 'Enacted into Law', status: 'enacted' } : b));
-    } else {
-      setWhipScore(w => Math.max(20, w - 8));
-      setPublicApproval(p => Math.min(100, p + 6));
-      setBills(bills.map(b => b.id === bill.id ? { ...b, stage: 'Vetoed & Returned to House', status: 'vetoed' } : b));
-    }
-    setSelectedBill(null);
-  };
+      const handleMailChoice = (mail, option) => {
+        if (option.authority) setAuthority(a => Math.min(100, Math.max(0, a + option.authority)));
+        if (option.treasury) setTreasury(t => t + option.treasury);
+        if (option.hustlers) setDemographics(d => ({ ...d, hustlers: Math.min(100, Math.max(0, d.hustlers + option.hustlers)) }));
+        if (option.risk) setUprisingRisk(r => Math.min(100, Math.max(0, r + option.risk)));
+        if (option.whip) setWhipScore(w => Math.min(100, Math.max(0, w + option.whip)));
 
-  // Cabinet Appointment Logic
-  const selectCabinetMinister = (docket, candidate) => {
-    setCabinet(prev => ({ ...prev, [docket]: candidate }));
-  };
+        setEmails(emails.map(e => e.id === mail.id ? { ...e, category: 'read', status: 'resolved' } : e));
+        setSelectedMail(null);
+      };
 
-  const isCabinetComplete = Object.values(cabinet).every(val => val !== null);
+      const handlePetitionChoice = (pet, option) => {
+        if (option.treasury) setTreasury(t => t + option.treasury);
+        if (option.risk) setUprisingRisk(r => Math.min(100, Math.max(0, r + option.risk)));
+        setPetitions(petitions.filter(p => p.id !== pet.id));
+      };
 
-  return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col justify-between selection:bg-amber-500 selection:text-slate-950">
-      
-      {/* INITIAL CABINET SELECTION OVERLAY (WEEK 1 INAUGURATION) */}
-      {!inaugurated && (
-        <div className="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md p-6 overflow-y-auto flex flex-col items-center">
-          <div className="max-w-4xl w-full space-y-6 my-auto">
-            <div className="text-center space-y-2">
-              <span className="px-3 py-1 bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-full text-xs font-semibold uppercase tracking-widest">
-                State House Gazette Notice
-              </span>
-              <h1 className="text-3xl font-extrabold text-amber-500 tracking-wide">
-                H.E. The President of Kenya, Commander-in-Chief
-              </h1>
-              <p className="text-slate-400 text-sm">
-                Swearing-in Protocol: Select your Cabinet Secretaries across core dockets to form your administration before entering office.
-              </p>
+      const handleBillAction = (bill, action) => {
+        if (action === 'assent') {
+          setTreasury(t => t + 65);
+          setPublicApproval(p => Math.max(10, p - 12));
+          setBills(bills.map(b => b.id === bill.id ? { ...b, stage: 'Enacted into Law', status: 'enacted' } : b));
+        } else {
+          setWhipScore(w => Math.max(20, w - 8));
+          setBills(bills.map(b => b.id === bill.id ? { ...b, stage: 'Vetoed & Returned', status: 'vetoed' } : b));
+        }
+        setSelectedBill(null);
+      };
+
+      const isCabinetComplete = Object.values(cabinet).every(val => val !== null);
+
+      return (
+        <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between">
+          
+          {/* WEEK 1 INAUGURATION CABINET SETUP */}
+          {!inaugurated && (
+            <div className="fixed inset-0 z-50 bg-slate-950/95 p-6 overflow-y-auto flex flex-col items-center">
+              <div className="max-w-4xl w-full space-y-6 my-auto">
+                <div className="text-center space-y-2">
+                  <span className="px-3 py-1 bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-full text-xs font-semibold uppercase">
+                    State House Gazette Notice
+                  </span>
+                  <h1 className="text-3xl font-extrabold text-amber-500">
+                    H.E. The President of Kenya, Commander-in-Chief
+                  </h1>
+                  <p className="text-slate-400 text-sm">
+                    Select your Cabinet Secretaries across all 8 core dockets to take your oath of office.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {Object.keys(candidatePool).map(docket => (
+                    <div key={docket} className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
+                      <div className="flex justify-between items-center border-b border-slate-800 pb-2">
+                        <span className="font-bold text-slate-200 capitalize text-sm">
+                          {docket === 'ag' ? 'Attorney General' : `CS ${docket}`}
+                        </span>
+                        {cabinet[docket] && <span className="text-xs text-emerald-400 font-bold">Appointed</span>}
+                      </div>
+
+                      <div className="space-y-2">
+                        {candidatePool[docket].map(cand => (
+                          <div 
+                            key={cand.name}
+                            onClick={() => setCabinet(prev => ({ ...prev, [docket]: cand }))}
+                            className={`p-3 rounded-lg border text-xs cursor-pointer flex justify-between items-center ${
+                              cabinet[docket]?.name === cand.name 
+                                ? 'bg-amber-500/20 border-amber-500 text-white' 
+                                : 'bg-slate-950 border-slate-800 text-slate-300'
+                            }`}
+                          >
+                            <div>
+                              <div className="font-semibold">{cand.name}</div>
+                              <div className="text-slate-500 text-[10px]">Region: {cand.region}</div>
+                            </div>
+                            <div className="text-right text-[11px]">
+                              <span className="text-blue-400">Comp: {cand.competence}%</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  disabled={!isCabinetComplete}
+                  onClick={() => setInaugurated(true)}
+                  className={`w-full py-4 rounded-xl font-bold text-sm uppercase tracking-wider transition-all ${
+                    isCabinetComplete 
+                      ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 cursor-pointer shadow-lg shadow-amber-500/20' 
+                      : 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                  }`}
+                >
+                  {isCabinetComplete ? 'Take Oath of Office & Begin Term' : 'Appoint All Ministers to Proceed'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* HEADER */}
+          <header className="bg-slate-900 border-b border-slate-800 sticky top-0 z-40">
+            <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
+              <div>
+                <h1 className="text-lg font-black text-amber-500 flex items-center gap-2">
+                  H.E. The President of Kenya, Commander-in-Chief
+                </h1>
+                <div className="text-xs text-slate-400 flex items-center gap-3">
+                  <span>Term: <strong className="text-slate-200">Year {Math.ceil(week / 52)}, Week {week % 52 === 0 ? 52 : week % 52}</strong> ({week} / 240 Weeks)</span>
+                  <span>•</span>
+                  <span>Authority: <strong className="text-amber-400">{authority}%</strong></span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 text-xs">
+                <div className="bg-slate-950 border border-slate-800 rounded-lg p-2">
+                  <div className="text-slate-400 text-[10px]">TREASURY</div>
+                  <div className="font-bold text-amber-400">KSh {treasury}B</div>
+                </div>
+                <div className="bg-slate-950 border border-slate-800 rounded-lg p-2">
+                  <div className="text-slate-400 text-[10px]">UPRISING RISK</div>
+                  <div className={`font-bold ${uprisingRisk > 50 ? 'text-red-400' : 'text-emerald-400'}`}>{uprisingRisk}%</div>
+                </div>
+                <button 
+                  onClick={advanceWeek}
+                  className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-4 py-2 rounded-lg font-black text-xs uppercase tracking-wider cursor-pointer"
+                >
+                  Advance Week &gt;
+                </button>
+              </div>
+            </div>
+          </header>
+
+          {/* TABS */}
+          <main className="max-w-7xl mx-auto px-4 py-6 w-full flex-grow">
+            <div className="flex border-b border-slate-800 gap-2 mb-6 overflow-x-auto pb-1">
+              {[
+                { id: 'home', label: 'Executive Dashboard' },
+                { id: 'inbox', label: `Inbox (${emails.filter(e => e.category === 'unread').length})` },
+                { id: 'petitions', label: `Grassroots (${petitions.length})` },
+                { id: 'bills', label: 'Legislative Desk' },
+                { id: 'cabinet', label: 'Cabinet & Whip' },
+                { id: 'military', label: 'KDF Command' },
+                { id: 'world', label: 'World Matrix' }
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`px-4 py-2.5 rounded-t-lg font-bold text-xs transition-all border-b-2 cursor-pointer ${
+                    activeTab === tab.id
+                      ? 'border-amber-500 text-amber-400 bg-slate-900/60'
+                      : 'border-transparent text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {Object.keys(candidatePool).map(docket => (
-                <div key={docket} className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
-                  <div className="flex justify-between items-center border-b border-slate-800 pb-2">
-                    <span className="font-bold text-slate-200 capitalize text-sm">
-                      {docket === 'ag' ? 'Attorney General' : `CS ${docket}`}
-                    </span>
-                    {cabinet[docket] ? (
-                      <span className="text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded flex items-center gap-1">
-                        <UserCheck className="w-3 h-3" /> Appointed
-                      </span>
-                    ) : (
-                      <span className="text-xs bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded">
-                        Pending
-                      </span>
-                    )}
+            {/* TAB CONTENT */}
+            {activeTab === 'home' && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+                    <span className="text-slate-400 text-xs font-semibold">Public Approval Rating</span>
+                    <div className="text-2xl font-black text-slate-100">{publicApproval}%</div>
                   </div>
+                  <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+                    <span className="text-slate-400 text-xs font-semibold">Whip Control</span>
+                    <div className="text-2xl font-black text-slate-100">{whipScore}%</div>
+                  </div>
+                  <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+                    <span className="text-slate-400 text-xs font-semibold">Debt / GDP Ratio</span>
+                    <div className="text-2xl font-black text-slate-100">{debtRatio}%</div>
+                  </div>
+                  <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+                    <span className="text-slate-400 text-xs font-semibold">Inflation Index</span>
+                    <div className="text-2xl font-black text-slate-100">{inflation}%</div>
+                  </div>
+                </div>
 
-                  <div className="space-y-2">
-                    {candidatePool[docket].map(cand => (
-                      <div 
-                        key={cand.name}
-                        onClick={() => selectCabinetMinister(docket, cand)}
-                        className={`p-3 rounded-lg border text-xs cursor-pointer transition-all flex justify-between items-center ${
-                          cabinet[docket]?.name === cand.name 
-                            ? 'bg-amber-500/10 border-amber-500/60 text-white' 
-                            : 'bg-slate-950 border-slate-800 hover:border-slate-700 text-slate-300'
-                        }`}
-                      >
-                        <div>
-                          <div className="font-semibold text-slate-100">{cand.name}</div>
-                          <div className="text-slate-500 text-[10px]">Region: {cand.region}</div>
-                        </div>
-                        <div className="flex gap-2 text-right">
-                          <span className="text-blue-400">Comp: {cand.competence}%</span>
-                          <span className="text-emerald-400">Loyalty: {cand.loyalty}%</span>
-                        </div>
+                <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
+                  <h3 className="font-bold text-sm text-slate-200 uppercase border-b border-slate-800 pb-2">Demographic Approvals</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {Object.entries(demographics).map(([key, val]) => (
+                      <div key={key} className="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                        <div className="text-xs capitalize text-slate-300">{key}</div>
+                        <div className="text-lg font-bold text-amber-400">{val}%</div>
                       </div>
                     ))}
                   </div>
                 </div>
-              ))}
-            </div>
-
-            <button
-              disabled={!isCabinetComplete}
-              onClick={() => setInaugurated(true)}
-              className={`w-full py-4 rounded-xl font-bold text-sm uppercase tracking-wider transition-all shadow-lg ${
-                isCabinetComplete 
-                  ? 'bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-amber-500/20' 
-                  : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
-              }`}
-            >
-              {isCabinetComplete ? 'Take Oath of Office & Begin Term' : 'Appoint All Ministers to Proceed'}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* TOP PRESIDENTIAL HEADER & STATE MONITOR */}
-      <header className="bg-slate-900 border-b border-slate-800 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div>
-            <h1 className="text-lg font-black text-amber-500 flex items-center gap-2">
-              <Landmark className="w-5 h-5" /> H.E. The President of Kenya, Commander-in-Chief
-            </h1>
-            <div className="text-xs text-slate-400 flex items-center gap-3">
-              <span>Term: <strong className="text-slate-200">Year {Math.ceil(week / 52)}, Week {week % 52 === 0 ? 52 : week % 52}</strong> ({week} / 240 Weeks)</span>
-              <span>•</span>
-              <span>Authority: <strong className="text-amber-400">{authority}%</strong></span>
-            </div>
-          </div>
-
-          {/* CRITICAL RISK GAUGE METERS */}
-          <div className="flex items-center gap-4 text-xs">
-            <div className="bg-slate-950 border border-slate-800 rounded-lg p-2 flex items-center gap-2">
-              <Coins className="w-4 h-4 text-amber-400" />
-              <div>
-                <div className="text-slate-400 text-[10px]">TREASURY</div>
-                <div className="font-bold text-amber-400">KSh {treasury}B</div>
               </div>
-            </div>
+            )}
 
-            <div className="bg-slate-950 border border-slate-800 rounded-lg p-2 flex items-center gap-2">
-              <Flame className={`w-4 h-4 ${uprisingRisk > 50 ? 'text-red-500 animate-pulse' : 'text-emerald-400'}`} />
-              <div>
-                <div className="text-slate-400 text-[10px]">UPRISING RISK</div>
-                <div className={`font-bold ${uprisingRisk > 50 ? 'text-red-400' : 'text-emerald-400'}`}>{uprisingRisk}%</div>
-              </div>
-            </div>
-
-            <div className="bg-slate-950 border border-slate-800 rounded-lg p-2 flex items-center gap-2">
-              <Scale className={`w-4 h-4 ${impeachmentRisk > 50 ? 'text-red-500 animate-pulse' : 'text-amber-400'}`} />
-              <div>
-                <div className="text-slate-400 text-[10px]">IMPEACHMENT</div>
-                <div className={`font-bold ${impeachmentRisk > 50 ? 'text-red-400' : 'text-amber-400'}`}>{impeachmentRisk}%</div>
-              </div>
-            </div>
-
-            <button 
-              onClick={advanceWeek}
-              className="bg-amber-500 hover:bg-amber-400 text-slate-950 px-4 py-2 rounded-lg font-black text-xs uppercase tracking-wider transition-all flex items-center gap-1 shadow-md shadow-amber-500/10"
-            >
-              Advance Week <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* MAIN STATE WORKSPACE CONTENT */}
-      <main className="max-w-7xl mx-auto px-4 py-6 w-full flex-grow">
-        
-        {/* TAB NAVIGATION HEADER */}
-        <div className="flex border-b border-slate-800 gap-2 mb-6 overflow-x-auto pb-1">
-          {[
-            { id: 'home', label: 'Executive Dashboard', icon: Building2 },
-            { id: 'inbox', label: 'Presidential Inbox', icon: Mail, badge: emails.filter(e => e.category === 'unread').length },
-            { id: 'petitions', label: 'Grassroots Petitions', icon: ShieldAlert, badge: petitions.length },
-            { id: 'bills', label: 'Legislative Assent Desk', icon: FileText, badge: bills.filter(b => b.stage === 'Presidential Assent Desk').length },
-            { id: 'cabinet', label: 'Cabinet & Whip', icon: Users },
-            { id: 'military', label: 'KDF Command', icon: Swords },
-            { id: 'world', label: 'Global World Matrix', icon: Globe }
-          ].map(tab => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-t-lg font-bold text-xs transition-all whitespace-nowrap border-b-2 ${
-                  activeTab === tab.id
-                    ? 'border-amber-500 text-amber-400 bg-slate-900/60'
-                    : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-slate-900/30'
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                {tab.label}
-                {tab.badge > 0 && (
-                  <span className="bg-amber-500 text-slate-950 font-extrabold text-[10px] px-1.5 py-0.2 rounded-full">
-                    {tab.badge}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* TAB 1: EXECUTIVE DASHBOARD */}
-        {activeTab === 'home' && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl space-y-1">
-                <span className="text-slate-400 text-xs font-semibold">Public Approval Rating</span>
-                <div className="text-2xl font-black text-slate-100">{publicApproval}%</div>
-                <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
-                  <div className="bg-emerald-500 h-full" style={{ width: `${publicApproval}%` }}></div>
-                </div>
-              </div>
-              <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl space-y-1">
-                <span className="text-slate-400 text-xs font-semibold">Parliamentary Whip Control</span>
-                <div className="text-2xl font-black text-slate-100">{whipScore}%</div>
-                <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
-                  <div className="bg-blue-500 h-full" style={{ width: `${whipScore}%` }}></div>
-                </div>
-              </div>
-              <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl space-y-1">
-                <span className="text-slate-400 text-xs font-semibold">National Debt / GDP Ratio</span>
-                <div className="text-2xl font-black text-slate-100">{debtRatio}%</div>
-                <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
-                  <div className="bg-amber-500 h-full" style={{ width: `${debtRatio}%` }}></div>
-                </div>
-              </div>
-              <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl space-y-1">
-                <span className="text-slate-400 text-xs font-semibold">Annual Inflation Index</span>
-                <div className="text-2xl font-black text-slate-100">{inflation}%</div>
-                <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
-                  <div className="bg-red-500 h-full" style={{ width: `${(inflation / 15) * 100}%` }}></div>
-                </div>
-              </div>
-            </div>
-
-            {/* DEMOGRAPHIC APPROVAL RATINGS */}
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-4">
-              <h3 className="font-bold text-sm text-slate-200 uppercase tracking-wider border-b border-slate-800 pb-2">
-                Demographic Coalition & Approval Index
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {Object.entries(demographics).map(([key, val]) => (
-                  <div key={key} className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
-                    <div className="flex justify-between text-xs capitalize font-semibold text-slate-300">
-                      <span>{key.replace(/([A-Z])/g, ' $1')}</span>
-                      <span className="text-amber-400">{val}%</span>
-                    </div>
-                    <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
-                      <div className="bg-amber-500 h-full" style={{ width: `${val}%` }}></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 2: PRESIDENTIAL INBOX */}
-        {activeTab === 'inbox' && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
-              <div className="flex border-b border-slate-800 gap-2 pb-2">
-                {['unread', 'read'].map(cat => (
-                  <button
-                    key={cat}
-                    onClick={() => setSelectedInboxTab(cat)}
-                    className={`px-3 py-1 rounded text-xs capitalize font-semibold ${
-                      selectedInboxTab === cat ? 'bg-amber-500 text-slate-950' : 'text-slate-400'
-                    }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-              <div className="space-y-2">
-                {emails.filter(e => e.category === selectedInboxTab).map(mail => (
-                  <div
-                    key={mail.id}
-                    onClick={() => setSelectedMail(mail)}
-                    className={`p-3 rounded-lg border cursor-pointer text-xs space-y-1 transition-all ${
-                      selectedMail?.id === mail.id ? 'bg-amber-500/10 border-amber-500' : 'bg-slate-950 border-slate-800 hover:border-slate-700'
-                    }`}
-                  >
-                    <div className="flex justify-between font-bold text-slate-200">
-                      <span>{mail.sender}</span>
-                      <span className="text-[10px] text-slate-500">{mail.date}</span>
-                    </div>
-                    <div className="text-slate-300 text-[11px] truncate">{mail.subject}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="md:col-span-2 bg-slate-900 border border-slate-800 rounded-xl p-6">
-              {selectedMail ? (
-                <div className="space-y-4">
-                  <div className="border-b border-slate-800 pb-3 space-y-1">
-                    <h2 className="text-lg font-bold text-amber-400">{selectedMail.subject}</h2>
-                    <div className="text-xs text-slate-400">From: {selectedMail.sender} | {selectedMail.date}</div>
-                  </div>
-                  <p className="text-sm text-slate-300 leading-relaxed">{selectedMail.body}</p>
-
-                  {selectedMail.status === 'pending' && (
-                    <div className="pt-4 border-t border-slate-800 space-y-2">
-                      <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">Executive Directives:</div>
-                      {selectedMail.options.map((opt, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => handleMailChoice(selectedMail, opt)}
-                          className="w-full text-left p-3 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 text-xs font-medium text-slate-200 transition-all"
-                        >
-                          {opt.text}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="h-full flex items-center justify-center text-slate-500 text-xs">
-                  Select a dispatch from the inbox list to review and issue presidential orders.
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* TAB 3: GRASSROOTS PETITIONS (CITIZEN RESISTANCE CHANNEL) */}
-        {activeTab === 'petitions' && (
-          <div className="space-y-4">
-            <div className="bg-amber-500/10 border border-amber-500/30 p-4 rounded-xl text-xs text-amber-300 flex items-center gap-3">
-              <AlertTriangle className="w-5 h-5 flex-shrink-0" />
-              <span>Direct public petitions submitted by civil society unions and grassroots coalitions. Resolving these directly stabilizes Uprising Risk.</span>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {petitions.map(pet => (
-                <div key={pet.id} className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
-                  <div className="flex justify-between items-start border-b border-slate-800 pb-2">
-                    <div>
-                      <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">{pet.organization}</span>
-                      <h4 className="font-bold text-sm text-slate-100">{pet.title}</h4>
-                    </div>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/20 text-red-400 border border-red-500/30">
-                      {pet.urgency}
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-300">{pet.description}</p>
-                  <div className="space-y-2 pt-2">
-                    {pet.options.map((opt, i) => (
-                      <button
-                        key={i}
-                        onClick={() => handlePetitionChoice(pet, opt)}
-                        className="w-full text-left p-2.5 rounded bg-slate-950 hover:bg-slate-800 border border-slate-800 text-xs text-slate-200"
+            {activeTab === 'inbox' && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
+                  <div className="space-y-2">
+                    {emails.map(mail => (
+                      <div
+                        key={mail.id}
+                        onClick={() => setSelectedMail(mail)}
+                        className={`p-3 rounded-lg border cursor-pointer text-xs space-y-1 ${
+                          selectedMail?.id === mail.id ? 'bg-amber-500/10 border-amber-500' : 'bg-slate-950 border-slate-800'
+                        }`}
                       >
-                        {opt.text}
-                      </button>
+                        <div className="font-bold text-slate-200">{mail.sender}</div>
+                        <div className="text-slate-300 truncate">{mail.subject}</div>
+                      </div>
                     ))}
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
 
-        {/* TAB 4: LEGISLATIVE ASSENT DESK */}
-        {activeTab === 'bills' && (
-          <div className="space-y-4">
-            <h3 className="font-bold text-sm text-slate-200 uppercase tracking-wider border-b border-slate-800 pb-2">
-              National Assembly Legislative Pipeline
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {bills.map(bill => (
-                <div key={bill.id} className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
-                  <div className="flex justify-between items-center border-b border-slate-800 pb-2">
-                    <span className="text-xs text-amber-400 font-semibold">{bill.ministry}</span>
-                    <span className="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-slate-300 font-bold">{bill.stage}</span>
-                  </div>
-                  <h4 className="font-bold text-sm text-slate-100">{bill.title}</h4>
-                  <p className="text-xs text-slate-300">{bill.description}</p>
-                  <div className="text-[11px] space-y-1 bg-slate-950 p-3 rounded border border-slate-800">
-                    <div className="text-emerald-400">Fiscal Impact: {bill.fiscalImpact}</div>
-                    <div className="text-red-400">Public Impact: {bill.publicImpact}</div>
-                  </div>
-                  {bill.stage === 'Presidential Assent Desk' && (
-                    <div className="flex gap-2 pt-2">
-                      <button
-                        onClick={() => handleBillAction(bill, 'assent')}
-                        className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded text-xs flex items-center justify-center gap-1"
-                      >
-                        <CheckCircle2 className="w-4 h-4" /> Sign into Law
-                      </button>
-                      <button
-                        onClick={() => handleBillAction(bill, 'veto')}
-                        className="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-2 rounded text-xs flex items-center justify-center gap-1"
-                      >
-                        <XCircle className="w-4 h-4" /> Veto Bill
-                      </button>
+                <div className="md:col-span-2 bg-slate-900 border border-slate-800 rounded-xl p-6">
+                  {selectedMail ? (
+                    <div className="space-y-4">
+                      <h2 className="text-lg font-bold text-amber-400">{selectedMail.subject}</h2>
+                      <p className="text-sm text-slate-300">{selectedMail.body}</p>
+                      {selectedMail.status === 'pending' && (
+                        <div className="space-y-2 pt-4 border-t border-slate-800">
+                          {selectedMail.options.map((opt, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => handleMailChoice(selectedMail, opt)}
+                              className="w-full text-left p-3 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 text-xs text-slate-200 cursor-pointer"
+                            >
+                              {opt.text}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
+                  ) : (
+                    <div className="h-full flex items-center justify-center text-slate-500 text-xs">Select an email dispatch.</div>
                   )}
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
+              </div>
+            )}
 
-        {/* TAB 5: CABINET & WHIP MANAGEMENT */}
-        {activeTab === 'cabinet' && (
-          <div className="space-y-6">
-            <h3 className="font-bold text-sm text-slate-200 uppercase tracking-wider border-b border-slate-800 pb-2">
-              Sworn Cabinet Secretaries
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {Object.entries(cabinet).map(([docket, min]) => (
-                <div key={docket} className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-2">
-                  <span className="text-[10px] text-amber-400 font-bold uppercase tracking-wider">CS {docket}</span>
-                  <div className="font-bold text-sm text-slate-100">{min?.name || 'Vacant'}</div>
-                  {min && (
-                    <div className="text-[11px] text-slate-400 space-y-1 pt-1 border-t border-slate-800">
-                      <div>Competence: <span className="text-slate-200">{min.competence}%</span></div>
-                      <div>Loyalty: <span className="text-slate-200">{min.loyalty}%</span></div>
-                      <div>Region: <span className="text-slate-200">{min.region}</span></div>
+            {activeTab === 'petitions' && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {petitions.map(pet => (
+                    <div key={pet.id} className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+                      <div className="font-bold text-amber-400 text-xs">{pet.organization}</div>
+                      <h4 className="font-bold text-sm text-slate-100">{pet.title}</h4>
+                      <p className="text-xs text-slate-300">{pet.description}</p>
+                      <div className="space-y-2">
+                        {pet.options.map((opt, i) => (
+                          <button
+                            key={i}
+                            onClick={() => handlePetitionChoice(pet, opt)}
+                            className="w-full text-left p-2.5 rounded bg-slate-950 hover:bg-slate-800 border border-slate-800 text-xs text-slate-200 cursor-pointer"
+                          >
+                            {opt.text}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  )}
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
+              </div>
+            )}
 
-        {/* TAB 6: KDF MILITARY COMMAND */}
-        {activeTab === 'military' && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl">
-                <div className="text-xs text-slate-400">KDF Combat Readiness</div>
-                <div className="text-2xl font-black text-emerald-400">{military.readiness}%</div>
-              </div>
-              <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl">
-                <div className="text-xs text-slate-400">Active Force Capacity</div>
-                <div className="text-2xl font-black text-slate-100">{military.troopCount.toLocaleString()} Troops</div>
-              </div>
-              <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl">
-                <div className="text-xs text-slate-400">Deployed Abroad</div>
-                <div className="text-2xl font-black text-amber-400">{military.deployedTroops.toLocaleString()} Troops</div>
-              </div>
-            </div>
-
-            <h3 className="font-bold text-sm text-slate-200 uppercase tracking-wider border-b border-slate-800 pb-2">
-              Active KDF Expeditionary Operations
-            </h3>
-            <div className="space-y-3">
-              {military.activeOperations.map(op => (
-                <div key={op.id} className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex justify-between items-center text-xs">
-                  <div>
-                    <div className="font-bold text-slate-100 text-sm">{op.name}</div>
-                    <div className="text-slate-400">Troops Committed: {op.troops} | Sector Operational Cost: KSh {op.cost}B / Month</div>
+            {activeTab === 'bills' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {bills.map(bill => (
+                  <div key={bill.id} className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+                    <div className="text-xs text-amber-400 font-semibold">{bill.ministry}</div>
+                    <h4 className="font-bold text-sm text-slate-100">{bill.title}</h4>
+                    <p className="text-xs text-slate-300">{bill.description}</p>
+                    <div className="text-[11px] bg-slate-950 p-3 rounded border border-slate-800 space-y-1">
+                      <div className="text-emerald-400">{bill.fiscalImpact}</div>
+                      <div className="text-red-400">{bill.publicImpact}</div>
+                    </div>
+                    {bill.stage === 'Presidential Assent Desk' && (
+                      <div className="flex gap-2">
+                        <button onClick={() => handleBillAction(bill, 'assent')} className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded text-xs cursor-pointer">Sign into Law</button>
+                        <button onClick={() => handleBillAction(bill, 'veto')} className="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-2 rounded text-xs cursor-pointer">Veto Bill</button>
+                      </div>
+                    )}
                   </div>
-                  <span className="px-2 py-1 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold">
-                    Risk: {op.risk}
-                  </span>
+                ))}
+              </div>
+            )}
+
+            {activeTab === 'cabinet' && (
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                {Object.entries(cabinet).map(([docket, min]) => (
+                  <div key={docket} className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-2">
+                    <span className="text-[10px] text-amber-400 font-bold uppercase">CS {docket}</span>
+                    <div className="font-bold text-sm text-slate-100">{min?.name || 'Vacant'}</div>
+                    {min && (
+                      <div className="text-[11px] text-slate-400 space-y-1 pt-1 border-t border-slate-800">
+                        <div>Competence: <span className="text-slate-200">{min.competence}%</span></div>
+                        <div>Region: <span className="text-slate-200">{min.region}</span></div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {activeTab === 'military' && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+                    <div className="text-xs text-slate-400">Readiness</div>
+                    <div className="text-2xl font-black text-emerald-400">{military.readiness}%</div>
+                  </div>
+                  <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+                    <div className="text-xs text-slate-400">Total Troops</div>
+                    <div className="text-2xl font-black text-slate-100">{military.troopCount.toLocaleString()}</div>
+                  </div>
+                  <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+                    <div className="text-xs text-slate-400">Deployed</div>
+                    <div className="text-2xl font-black text-amber-400">{military.deployedTroops.toLocaleString()}</div>
+                  </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
+              </div>
+            )}
 
-        {/* TAB 7: GLOBAL DIPLOMACY MATRIX */}
-        {activeTab === 'world' && (
-          <div className="space-y-4">
-            <h3 className="font-bold text-sm text-slate-200 uppercase tracking-wider border-b border-slate-800 pb-2">
-              Bilateral Diplomatic & Trade Matrix
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {countries.map(c => (
-                <div key={c.id} className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-2">
-                  <div className="flex justify-between items-center border-b border-slate-800 pb-2">
-                    <span className="font-bold text-sm text-slate-100">{c.name}</span>
-                    <span className="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-amber-400 font-bold">{c.status}</span>
-                  </div>
-                  <div className="text-xs text-slate-300">
-                    <div>Region: <span className="text-slate-400">{c.region}</span></div>
-                    <div>Diplomatic Alignment: <span className="text-emerald-400">{c.relation}%</span></div>
-                    <div className="mt-1 text-[11px] text-slate-400 bg-slate-950 p-2 rounded border border-slate-800">
-                      Pact: {c.tradeDeal}
+            {activeTab === 'world' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {countries.map(c => (
+                  <div key={c.id} className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-2">
+                    <div className="flex justify-between items-center border-b border-slate-800 pb-2">
+                      <span className="font-bold text-sm text-slate-100">{c.name}</span>
+                      <span className="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-amber-400 font-bold">{c.status}</span>
+                    </div>
+                    <div className="text-xs text-slate-300">
+                      <div>Alignment: <span className="text-emerald-400">{c.relation}%</span></div>
+                      <div className="mt-1 text-[11px] text-slate-400 bg-slate-950 p-2 rounded border border-slate-800">Pact: {c.tradeDeal}</div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+                ))}
+              </div>
+            )}
+          </main>
 
-      </main>
+          <footer className="bg-slate-900 border-t border-slate-800 text-center text-xs text-slate-500 py-3">
+            Statecraft Kenya: Modern Presidential Simulator • Executive Suite
+          </footer>
+        </div>
+      );
+    }
 
-      {/* EXECUTIVE FOOTER */}
-      <footer className="bg-slate-900 border-t border-slate-800 text-center text-xs text-slate-500 py-3">
-        Statecraft Kenya: Modern Presidential Simulator • Executive Command Suite
-      </footer>
-    </div>
-  );
-}
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>
